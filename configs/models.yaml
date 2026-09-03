@@ -6,3 +6,4 @@ num_ctx: 40960
 temperature: 0.0
 max_answer_tokens: 512
 seeds: [11, 22, 33]
+think: false

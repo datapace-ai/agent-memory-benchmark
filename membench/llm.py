@@ -55,6 +55,11 @@ class LLMClient:
                 "num_predict": max_tokens or self.cfg.max_answer_tokens,
             },
         }
+        if self.cfg.think is not None:
+            # Reasoning models emit a long <think> block by default. It costs time
+            # and tokens without changing the answer, so the benchmark turns it off
+            # identically for every system. See METHODS.md.
+            payload["think"] = self.cfg.think
         started = time.perf_counter()
         data = self._post("/api/chat", payload)
         elapsed = time.perf_counter() - started

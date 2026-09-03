@@ -20,6 +20,7 @@ class ModelConfig:
     temperature: float
     max_answer_tokens: int
     seeds: tuple[int, ...]
+    think: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ def load_models(path: Path) -> ModelConfig:
         temperature=float(raw["temperature"]),
         max_answer_tokens=int(raw["max_answer_tokens"]),
         seeds=tuple(int(s) for s in raw["seeds"]),
+        think=raw.get("think"),
     )
 
 

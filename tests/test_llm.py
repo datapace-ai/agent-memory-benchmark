@@ -15,6 +15,7 @@ CFG = ModelConfig(
     temperature=0.0,
     max_answer_tokens=512,
     seeds=(11,),
+    think=False,
 )
 
 
@@ -105,3 +106,37 @@ def test_count_tokens_uses_embed_endpoint():
         return httpx.Response(200, json={"embeddings": [[0.0]], "prompt_eval_count": 42})
 
     assert make_client(handler).count_tokens("some text") == 42
+
+
+def test_complete_sends_think_when_configured():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(
+            200,
+            json={"message": {"content": "x"}, "prompt_eval_count": 1, "eval_count": 1,
+                  "done_reason": "stop"},
+        )
+
+    make_client(handler).complete("s", "u", seed=11)
+    assert seen["body"]["think"] is False
+
+
+def test_complete_omits_think_when_unset():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(
+            200,
+            json={"message": {"content": "x"}, "prompt_eval_count": 1, "eval_count": 1,
+                  "done_reason": "stop"},
+        )
+
+    from dataclasses import replace
+
+    LLMClient(replace(CFG, think=None), transport=httpx.MockTransport(handler)).complete(
+        "s", "u", seed=11
+    )
+    assert "think" not in seen["body"]
