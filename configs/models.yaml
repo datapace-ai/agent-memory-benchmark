@@ -1,0 +1,8 @@
+base_url: http://localhost:11434
+answer_model: qwen3:14b
+judge_model: qwen3:14b
+embed_model: nomic-embed-text
+num_ctx: 40960
+temperature: 0.0
+max_answer_tokens: 512
+seeds: [11, 22, 33]

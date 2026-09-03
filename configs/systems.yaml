@@ -1,0 +1,11 @@
+systems:
+  - name: oracle
+    kind: context_window
+    params:
+      evidence_only: true
+      token_budget: 40000
+  - name: window
+    kind: context_window
+    params:
+      evidence_only: false
+      token_budget: 32000

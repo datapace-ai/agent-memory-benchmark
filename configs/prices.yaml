@@ -1,0 +1,6 @@
+# USD per million tokens. Used only to price our measured token counts.
+# Never used to run anything.
+models:
+  gpt-4o-mini: {input: 0.15, output: 0.60}
+  claude-sonnet-5: {input: 2.00, output: 10.00}
+  claude-haiku-4-5: {input: 1.00, output: 5.00}
