@@ -166,4 +166,23 @@ Dataset and judge prompts: `xiaowu0162/LongMemEval`. Competing judge rules:
 
 ## What we would do differently
 
-Written after each full run.
+Written after each full run. Findings while building are kept here too.
+
+- 2026-09-07, judge truncation. On the first API track, five of twenty
+  hand-checked LongMemEval-rule verdicts were wrong for one reason: the judge
+  model began a numbered analysis, the 64-token output limit cut it off before
+  the verdict, and the parser scored the truncation as "no". The JSON-style
+  Zep and Mem0 rules were unaffected because their prompts ask for a JSON
+  object the model produces first. Fix: the grader is told to reply with
+  exactly one word, the limit is 256 tokens, a verdict that never says yes or
+  no is flagged and counted in the summary, and `python -m membench.rejudge`
+  re-grades an existing run without re-running its answers. Every published
+  table carries the count of unparsed verdicts, and any run graded before this
+  fix is re-judged before it is reported.
+- 2026-09-07, Mem0 concurrency. Two Mem0 instances in one process collide on a
+  global local store under `~/.mem0`, whatever path each instance is given.
+  Mem0 units therefore run one at a time. Cognee's configuration is
+  process-global for the same reason.
+- 2026-09-07, tool-call markup. Withheld tools on the file baseline's final
+  turn made one model write tool-call markup as its answer. The final turn now
+  says the tools are gone and asks for the answer in prose.
