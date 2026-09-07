@@ -1,6 +1,6 @@
 import json
 
-from membench.report import main, render_markdown
+from membench.report import compare_tracks, main, render_markdown
 
 SUMMARY = {
     "systems": {
@@ -86,3 +86,23 @@ def test_main_writes_summary_json_and_md(tmp_path):
     written = json.loads((out_dir / "summary.json").read_text())
     assert written["systems"]["window"]["accuracy"]["longmemeval"] == 1.0
     assert (out_dir / "summary.md").exists()
+
+
+def test_compare_tracks_puts_systems_in_rows_and_tracks_in_columns():
+    a = {"systems": {"window": {"accuracy": {"longmemeval": 0.5}, "tokens_per_answer": 30000.0},
+                     "oracle": {"accuracy": {"longmemeval": 0.8}, "tokens_per_answer": 4000.0}},
+         "judge_model": "judge/x"}
+    b = {"systems": {"window": {"accuracy": {"longmemeval": 0.6}, "tokens_per_answer": 29000.0}},
+         "judge_model": "judge/x"}
+    text = compare_tracks({"nemotron": a, "gemma": b})
+    assert "| System | nemotron | gemma |" in text
+    assert "| window | 50.0 (30000) | 60.0 (29000) |" in text
+    assert "| oracle | 80.0 (4000) | n/a |" in text
+    assert "Judge: judge/x" in text
+    assert "—" not in text
+
+
+def test_render_markdown_names_the_answerer_and_judge_when_present():
+    s = dict(SUMMARY); s["answer_model"] = "vendor/a:free"; s["judge_model"] = "vendor/j:free"
+    text = render_markdown(s)
+    assert "Answerer: vendor/a:free. Judge: vendor/j:free." in text

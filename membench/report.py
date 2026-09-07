@@ -18,7 +18,11 @@ CEILING_NOTE = (
 
 
 def render_markdown(summary: dict) -> str:
-    lines = ["# Agent memory benchmark results", "", CEILING_NOTE, ""]
+    lines = ["# Agent memory benchmark results", ""]
+    if summary.get("answer_model") or summary.get("judge_model"):
+        lines.append(f"Answerer: {summary.get('answer_model', 'unknown')}. Judge: {summary.get('judge_model', 'unknown')}.")
+        lines.append("")
+    lines += [CEILING_NOTE, ""]
     lines += [
         "| System | LongMemEval rule | Zep rule | Mem0 rule | Share of ceiling | "
         "Gap to best baseline | Tokens per answer | Answer p50 | Answer p95 | Errors |",
@@ -72,6 +76,29 @@ def render_markdown(summary: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def compare_tracks(named_summaries: dict[str, dict]) -> str:
+    """One table across model tracks: rows are systems, columns are tracks.
+
+    Accuracy under the LongMemEval rule, with tokens per answer in parentheses,
+    so a reader sees both what each model recalls and what it costs to ask."""
+    tracks = list(named_summaries)
+    systems = sorted({s for summary in named_summaries.values() for s in summary["systems"]})
+    lines = ["# Model tracks, LongMemEval rule (tokens per answer)", ""]
+    lines.append("| System | " + " | ".join(tracks) + " |")
+    lines.append("| --- | " + " | ".join("---:" for _ in tracks) + " |")
+    for name in systems:
+        cells = []
+        for track in tracks:
+            entry = named_summaries[track]["systems"].get(name)
+            if entry is None:
+                cells.append("n/a")
+            else:
+                cells.append(f"{entry['accuracy']['longmemeval'] * 100:.1f} ({entry['tokens_per_answer']:.0f})")
+        lines.append(f"| {name} | " + " | ".join(cells) + " |")
+    lines += ["", "Judge: " + ", ".join(sorted({str(s.get("judge_model", "unknown")) for s in named_summaries.values()})), ""]
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Summarize benchmark runs.")
     parser.add_argument("--runs", type=Path, default=REPO_ROOT / "results" / "runs" / "runs.jsonl")
@@ -82,6 +109,10 @@ def main(argv: list[str] | None = None) -> int:
     questions = {q.question_id: q for q in read_jsonl(args.questions)}
     records = [json.loads(line) for line in args.runs.read_text().splitlines() if line.strip()]
     summary = summarize(records, questions)
+    judges = {str((r.get("provenance") or {}).get("judge_model", "")) for r in records}
+    answerers = {str((r.get("provenance") or {}).get("answer_model", "")) for r in records}
+    summary["judge_model"] = ", ".join(sorted(j for j in judges if j)) or "unknown"
+    summary["answer_model"] = ", ".join(sorted(a for a in answerers if a)) or "unknown"
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")

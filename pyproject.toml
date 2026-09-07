@@ -16,6 +16,9 @@ vendors = [
   "cognee==1.5.4",
   "graphiti-core[falkordblite,sentence-transformers]==0.30.1",
   "letta-client==1.12.1",
+  "langchain-openai>=1.0",
+  "langchain-huggingface>=1.0",
+  "fastembed>=0.7",
 ]
 
 [build-system]
