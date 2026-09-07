@@ -124,3 +124,22 @@ def test_answer_before_reset_raises(tmp_path):
         assert "reset" in str(exc)
     else:
         raise AssertionError("answer without reset must fail loudly")
+
+
+def test_reset_closes_the_previous_store_client(tmp_path):
+    class Client:
+        closed = 0
+
+        def close(self):
+            Client.closed += 1
+
+    class Store:
+        client = Client()
+
+    memory = FakeMemory()
+    memory.vector_store = Store()
+    system = Mem0System(name="mem0", llm=fake_llm(), cfg=CFG, seed=11, store_dir=tmp_path,
+                        top_k=5, memory_factory=lambda namespace: memory)
+    system.reset("q1:11")
+    system.reset("q2:11")
+    assert Client.closed == 1

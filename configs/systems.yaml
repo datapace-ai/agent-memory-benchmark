@@ -17,6 +17,9 @@ systems:
     kind: mem0
     params:
       top_k: 10
+      # Mem0 opens a global Qdrant store under ~/.mem0 per instance; two
+      # instances in one process collide on its lock, so units run one at a time.
+      serial: true
   - name: langmem
     kind: langmem
     params:

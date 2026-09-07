@@ -99,10 +99,27 @@ class Mem0System(MemorySystem):
         return self._memory
 
     def reset(self, namespace: str) -> None:
+        self._close_previous()
         self._user = namespace
         self._sessions = 0
         self._memory = self._factory(namespace)
         self._memory.delete_all(user_id=namespace)
+
+    def _close_previous(self) -> None:
+        """Release the previous instance's local Qdrant locks before opening another."""
+        memory = self._memory
+        self._memory = None
+        if memory is None:
+            return
+        for attr in ("vector_store", "_migrations_store"):
+            store = getattr(memory, attr, None)
+            client = getattr(store, "client", None)
+            close = getattr(client, "close", None)
+            if callable(close):
+                try:
+                    close()
+                except Exception:
+                    pass
 
     def ingest(self, session: Session) -> IngestStats:
         if self._user is None:
