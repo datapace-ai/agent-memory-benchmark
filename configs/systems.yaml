@@ -9,6 +9,10 @@ systems:
     params:
       evidence_only: false
       token_budget: 32000
+  - name: file
+    kind: file_search
+    params:
+      max_tool_calls: 8
   - name: mem0
     kind: mem0
     params:

@@ -18,6 +18,13 @@ def build(
         return ContextWindowSystem(
             name=cfg.name, llm=llm, token_budget=int(cfg.params["token_budget"]), seed=seed
         )
+    if cfg.kind == "file_search":
+        from membench.systems.file_search import FileSearchSystem
+
+        return FileSearchSystem(
+            cfg.name, llm, STORE_ROOT / cfg.name / f"seed-{seed}", seed,
+            max_tool_calls=int(cfg.params.get("max_tool_calls", 8)),
+        )
     if cfg.kind in VENDOR_KINDS:
         if models is None:
             raise ValueError(f"system kind {cfg.kind} needs the models config")

@@ -20,6 +20,16 @@ _BACKOFF_SECONDS = (1.0, 4.0)
 
 
 @dataclass(frozen=True)
+class ChatResponse:
+    message: dict
+    tool_calls: list[dict]
+    prompt_tokens: int
+    completion_tokens: int
+    seconds: float
+    truncated: bool
+
+
+@dataclass(frozen=True)
 class LLMResponse:
     text: str
     prompt_tokens: int
@@ -69,6 +79,43 @@ class LLMClient:
             prompt_tokens=int(data.get("prompt_eval_count", 0)),
             completion_tokens=int(data.get("eval_count", 0)),
             seconds=elapsed,
+            truncated=data.get("done_reason") == "length",
+        )
+
+    def chat(
+        self,
+        messages: list[dict],
+        tools: list[dict] | None,
+        seed: int,
+        max_tokens: int | None = None,
+        model: str | None = None,
+    ) -> ChatResponse:
+        """Multi-turn chat with optional tool calling, for tool-loop systems."""
+        payload = {
+            "model": model or self.cfg.answer_model,
+            "stream": False,
+            "messages": messages,
+            "options": {
+                "num_ctx": self.cfg.num_ctx,
+                "temperature": self.cfg.temperature,
+                "seed": seed,
+                "num_predict": max_tokens or self.cfg.max_answer_tokens,
+            },
+        }
+        if tools:
+            payload["tools"] = tools
+        if self.cfg.think is not None:
+            payload["think"] = self.cfg.think
+        started = time.perf_counter()
+        data = self._post("/api/chat", payload)
+        message = dict(data.get("message", {}))
+        message["content"] = _THINK.sub("", message.get("content", "") or "").strip()
+        return ChatResponse(
+            message=message,
+            tool_calls=list(message.get("tool_calls") or []),
+            prompt_tokens=int(data.get("prompt_eval_count", 0)),
+            completion_tokens=int(data.get("eval_count", 0)),
+            seconds=time.perf_counter() - started,
             truncated=data.get("done_reason") == "length",
         )
 

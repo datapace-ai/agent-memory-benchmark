@@ -140,3 +140,33 @@ def test_complete_omits_think_when_unset():
         "s", "u", seed=11
     )
     assert "think" not in seen["body"]
+
+
+def test_chat_passes_tools_and_returns_tool_calls():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json={
+            "message": {"role": "assistant", "content": "",
+                        "tool_calls": [{"function": {"name": "grep", "arguments": {"pattern": "dog"}}}]},
+            "prompt_eval_count": 50, "eval_count": 9, "done_reason": "stop"})
+
+    out = make_client(handler).chat(
+        messages=[{"role": "user", "content": "find the dog"}],
+        tools=[{"type": "function", "function": {"name": "grep", "parameters": {}}}], seed=11)
+    assert out.tool_calls[0]["function"]["name"] == "grep"
+    assert out.tool_calls[0]["function"]["arguments"] == {"pattern": "dog"}
+    assert out.prompt_tokens == 50 and out.completion_tokens == 9
+    assert seen["body"]["tools"][0]["function"]["name"] == "grep"
+    assert seen["body"]["options"]["seed"] == 11
+
+
+def test_chat_without_tools_returns_plain_message():
+    def handler(request):
+        assert "tools" not in json.loads(request.content)
+        return httpx.Response(200, json={"message": {"role": "assistant", "content": "hi"},
+                                         "prompt_eval_count": 3, "eval_count": 1, "done_reason": "stop"})
+
+    out = make_client(handler).chat(messages=[{"role": "user", "content": "x"}], tools=None, seed=11)
+    assert out.message["content"] == "hi" and out.tool_calls == []

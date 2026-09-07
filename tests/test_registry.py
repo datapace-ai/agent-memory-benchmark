@@ -4,6 +4,7 @@ import pytest
 from membench.config import REPO_ROOT, ModelConfig, SystemConfig
 from membench.llm import LLMClient
 from membench.systems.cognee_system import CogneeSystem
+from membench.systems.file_search import FileSearchSystem
 from membench.systems.context_window import ContextWindowSystem
 from membench.systems.langmem_system import LangMemSystem
 from membench.systems.mem0_system import Mem0System
@@ -24,6 +25,10 @@ def test_build_each_kind():
     assert isinstance(
         build(SystemConfig("window", "context_window", {"token_budget": 32000}), llm(), 11, CFG),
         ContextWindowSystem,
+    )
+    assert isinstance(
+        build(SystemConfig("file", "file_search", {"max_tool_calls": 8}), llm(), 11, CFG),
+        FileSearchSystem,
     )
     assert isinstance(build(SystemConfig("mem0", "mem0", {"top_k": 10}), llm(), 11, CFG), Mem0System)
     assert isinstance(
