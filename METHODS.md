@@ -28,16 +28,38 @@ Release one runs on OpenRouter's free models rather than a local model, so no
 laptop is loaded and the model is one readers can name. Provider and model
 tags, the judge, and the embedding model are recorded in every run record.
 
-- Answerers, as tracks: `nvidia/nemotron-3.5-lightning:free` (30B mixture of
-  experts, 3B active) and `google/gemma-4-31b-it:free` (31B dense). The track's
-  answerer is also the model inside each product.
-- Judge: `google/gemma-4-31b-it:free` for every system and every track, so a
-  difference between tracks is the answerer, not the grader.
+- Free models were chosen by a responsiveness probe on 2026-09-07 (13 models
+  with at least 64k context and a seed parameter; 7 calls each: two small
+  prompts, one 4,000-token prompt, one tool call, three in parallel):
+
+  | Model | Calls answered | Median latency | Tool call |
+  | --- | ---: | ---: | --- |
+  | inclusionai/ling-3.0-flash-fin:free | 7 of 7 | 0.7 s | yes |
+  | inclusionai/ling-3.0-flash-sante:free | 7 of 7 | 0.7 s | yes |
+  | cohere/north-mini-code:free | 7 of 7 | 0.8 s | yes |
+  | nvidia/nemotron-3-super-120b-a12b:free | 6 of 7 | 0.5 s | yes |
+  | nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free | 6 of 7 | 0.5 s | yes |
+  | nvidia/nemotron-3.5-lightning:free | 7 of 7 | 71 s | yes |
+  | nvidia/nemotron-3-ultra-550b-a55b:free | 6 of 7 | 42 s | yes |
+  | google/gemma-4-31b-it:free, gemma-4-26b-a4b-it:free | 0 of 7 | upstream pool saturated | |
+  | thinkingmachines/inkling, inkling-small | 0 of 7 | refused | |
+  | liquid/lfm-2.5-2.6b:free | 0 of 7 | rejected | |
+
+- Answerers, as tracks: `inclusionai/ling-3.0-flash-fin:free` first, then
+  `nvidia/nemotron-3-super-120b-a12b:free` and `cohere/north-mini-code:free`.
+  The track's answerer is also the model inside each product.
+- Judge: `inclusionai/ling-3.0-flash-fin:free` for every system and every
+  track, so a difference between tracks is the answerer, not the grader. On the
+  Ling track the judge grades its own answers; that is a known leniency risk,
+  stated here, and it applies equally to every system inside the track.
 - Reasoning off on every call through OpenRouter's `reasoning` parameter, and
   any residual think block is stripped before grading.
-- Requests are paced at one every three seconds and retried on rate limits with
-  the provider's Retry-After, because free variants are capped per minute and
-  per day. Latency figures on a shared free tier are therefore noisier than on
+- OpenRouter caps free models at 20 requests per minute per account (the
+  response body names the limit `free-models-per-min`). Requests are paced
+  at one every 3.5 seconds across all worker threads and retried with backoff
+  on rate-limit responses. The products' own calls to the model go through
+  their libraries' clients with their own retries and are not paced by the
+  harness. Latency figures on a shared free tier are therefore noisier than on
   a dedicated endpoint; token counts are unaffected.
 - Embeddings for the products run on the CPU with `BAAI/bge-small-en-v1.5`
   (384 dimensions), because no free API serves embeddings.
@@ -72,8 +94,8 @@ store size.
 
 | Product | Version | Ingest call | Retrieval call | How reasoning is turned off |
 | --- | --- | --- | --- | --- |
-| Mem0 open source | mem0ai 2.0.20 | `Memory.add(messages, user_id)` per session | `Memory.search(query, filters={user_id}, top_k)` | LangChain `ChatOllama(reasoning=False)` through Mem0's `langchain` provider |
-| LangMem | langmem 0.0.30 | `MemoryStoreManager.invoke({messages})` per session | `MemoryStoreManager.search(query)` | `ChatOllama(reasoning=False)` |
+| Mem0 open source | mem0ai 2.0.20 | `Memory.add(messages, user_id)` per session | `Memory.search(query, filters={user_id}, top_k)` | LangChain chat model through Mem0's `langchain` provider: `ChatOpenAI` at the API provider with `reasoning: {enabled: false}`, or `ChatOllama(reasoning=False)` locally. Runs one unit at a time: each instance also opens a global store under `~/.mem0`. |
+| LangMem | langmem 0.0.30 | `MemoryStoreManager.invoke({messages})` per session | `MemoryStoreManager.search(query)` | same LangChain chat model as Mem0 |
 | File search (baseline) | none | one dated text file per session | the model's own `list_files`, `read_file`, `grep` calls, at most 8, then it must answer | `think: false` on every call |
 | Graphiti (Zep's engine) | graphiti-core 0.30.1, embedded FalkorDB | `add_episode` per turn with the session date as reference time, one group per namespace | `Graphiti.search(query, group_ids)` edge facts | the `qwen3-nothink:14b` variant through the OpenAI-compatible endpoint; BGE reranker runs locally |
 | Letta | letta-client 1.12.1 against the `letta/letta` Docker server | two user messages per session, the dated first turn then the full transcript, at most 6 agent steps | none: the agent answers inside Letta; tokens are Letta's reported usage | `reasoning=False`, `enable_reasoner=False` on the agent |
@@ -90,9 +112,13 @@ libraries that reach Ollama through its OpenAI-compatible endpoint, which has
 no reasoning flag. `scripts/create_nothink_model.sh` builds it and
 `models/Modelfile.qwen3-nothink` is committed.
 
-Vendor smoke results (ingestion seconds per session per product, whether
-Cognee's reasoning flag reached Ollama, adapter failures): TO BE RECORDED after
-the first vendor smoke, which waits for the phase 1 full run to finish.
+Embeddings for the products on an API track are `BAAI/bge-small-en-v1.5`
+(384 dimensions) on the CPU: LangChain `HuggingFaceEmbeddings` for Mem0 and
+LangMem, `fastembed` for Cognee, a sentence-transformers wrapper for Graphiti.
+
+Vendor smoke results per product (ingestion seconds per session, retrieved
+context shape, failures): recorded below as each product completes its first
+ten-question pass.
 
 ## Judge
 
