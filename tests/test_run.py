@@ -8,6 +8,7 @@ import pytest
 
 from membench.config import ModelConfig
 from membench.run import (
+    _run_units,
     acquire_lock,
     append_record,
     apply_model_overrides,
@@ -114,3 +115,39 @@ def test_apply_model_overrides_changes_answerer_and_product_model_but_not_judge_
     assert track.judge_model == "j"
     assert apply_model_overrides(base, "", "").answer_model == "a"
     assert apply_model_overrides(base, "", "judge2").judge_model == "judge2"
+
+
+def test_run_units_with_workers_writes_every_unit_once(tmp_path, monkeypatch):
+    """Four workers, twelve units, no duplicates, no losses, every record graded."""
+    import membench.run as run_mod
+    from membench.judge.judge import Verdicts
+    from membench.systems.base import Answer, IngestStats, MemorySystem
+
+    class Slow(MemorySystem):
+        def __init__(self, name):
+            self.name = name
+
+        def reset(self, namespace):
+            pass
+
+        def ingest(self, session):
+            return IngestStats(0.0, 1, 1)
+
+        def answer(self, q, d):
+            import time
+
+            time.sleep(0.01)
+            return Answer("a", "ctx", 5, 1, 0.0, 0.01)
+
+    class FakeJudge:
+        def grade(self, question, response, seed):
+            return Verdicts(True, True, False, None, {})
+
+    monkeypatch.setattr(run_mod, "build", lambda cfg, llm, seed=0, models=None: Slow(cfg.name))
+    out = tmp_path / "runs.jsonl"
+    work = [(s, question(f"q{i}"), 11) for s in systems() for i in range(6)]
+    _run_units(work, llm=None, models=None, judge=FakeJudge(), provenance={"p": 1}, out=out, workers=4)
+    lines = [json.loads(l) for l in out.read_text().splitlines()]
+    assert len(lines) == 12
+    assert len({(l["system"], l["question_id"], l["seed"]) for l in lines}) == 12
+    assert all(l["correct_longmemeval"] is True and l["provenance"] == {"p": 1} for l in lines)

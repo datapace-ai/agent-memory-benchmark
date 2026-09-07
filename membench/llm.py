@@ -14,6 +14,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
+import threading
 import time
 from dataclasses import dataclass
 from urllib.parse import urlparse
@@ -63,6 +65,7 @@ class LLMClient:
             base_url=cfg.base_url, timeout=300.0, transport=transport, headers=headers
         )
         self._last_request = 0.0
+        self._pace_lock = threading.Lock()
 
     # ---- public API -------------------------------------------------------
 
@@ -194,12 +197,14 @@ class LLMClient:
         time.sleep(seconds)
 
     def _pace(self) -> None:
+        """Global minimum gap between requests, shared across worker threads."""
         gap = self.cfg.min_request_interval_seconds
-        if gap > 0:
-            wait = self._last_request + gap - time.monotonic()
-            if wait > 0:
-                self._sleep(wait)
-        self._last_request = time.monotonic()
+        with self._pace_lock:
+            if gap > 0:
+                wait = self._last_request + gap - time.monotonic()
+                if wait > 0:
+                    self._sleep(wait)
+            self._last_request = time.monotonic()
 
     def _post(self, path: str, payload: dict) -> dict:
         compat = self.cfg.provider == "openai_compat"
@@ -219,6 +224,9 @@ class LLMClient:
                 else:
                     last = f"HTTP {response.status_code}: {response.text[:300]}"
                     retry_after = response.headers.get("Retry-After")
+                    if response.status_code == 429:
+                        print(f"[llm] rate limited (attempt {attempt + 1}/{retries}), retry-after={retry_after}",
+                              file=sys.stderr, flush=True)
                     if retry_after and attempt < retries - 1:
                         try:
                             self._sleep(min(float(retry_after), 120.0))
