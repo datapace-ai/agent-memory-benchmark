@@ -25,6 +25,7 @@ class ModelConfig:
     provider: str = "ollama"
     api_key_env: str | None = None
     min_request_interval_seconds: float = 0.0
+    embed_dims: int = 768
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,7 @@ def load_models(path: Path) -> ModelConfig:
         provider=raw.get("provider", "ollama"),
         api_key_env=raw.get("api_key_env"),
         min_request_interval_seconds=float(raw.get("min_request_interval_seconds", 0.0)),
+        embed_dims=int(raw.get("embed_dims", 768)),
     )
 
 

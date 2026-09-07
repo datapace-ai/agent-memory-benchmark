@@ -26,7 +26,7 @@ from membench.config import ModelConfig
 from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.shared import EMBEDDING_DIMS, answer_from_context
+from membench.systems.shared import answer_from_context, api_key
 
 _DATE = re.compile(r"(\d{4})/(\d{2})/(\d{2}).*?(\d{2}):(\d{2})")
 
@@ -58,6 +58,24 @@ def format_edges(edges: list) -> str:
     return "\n".join(lines) if lines else "(no facts retrieved)"
 
 
+class LocalEmbedder:
+    """Graphiti EmbedderClient over a sentence-transformers model on the CPU."""
+
+    def __init__(self, model_name: str, dims: int) -> None:
+        from sentence_transformers import SentenceTransformer
+
+        self._model = SentenceTransformer(model_name, device="cpu")
+        self._dims = dims
+
+    async def create(self, input_data):
+        vec = self._model.encode(input_data if isinstance(input_data, str) else " ".join(map(str, input_data)), normalize_embeddings=True)
+        return [float(x) for x in vec[: self._dims]]
+
+    async def create_batch(self, input_data_list):
+        vecs = self._model.encode(list(input_data_list), normalize_embeddings=True)
+        return [[float(x) for x in v[: self._dims]] for v in vecs]
+
+
 def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[], object]:
     state = {"n": 0}
 
@@ -77,21 +95,27 @@ def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[], 
         path.mkdir(parents=True)
         db = FalkorDB(str(path / "falkordb.db"))
         model = cfg.openai_compat_model
-        return Graphiti(
-            graph_driver=FalkorDriver(falkor_db=db),
-            llm_client=OpenAIGenericClient(
-                LLMConfig(
-                    api_key="ollama", model=model, small_model=model, base_url=f"{cfg.base_url}/v1"
-                )
-            ),
-            embedder=OpenAIEmbedder(
+        if cfg.provider == "openai_compat":
+            llm_client = OpenAIGenericClient(
+                LLMConfig(api_key=api_key(cfg) or "none", model=model, small_model=model, base_url=cfg.base_url)
+            )
+            embedder = LocalEmbedder(cfg.embed_model, cfg.embed_dims)
+        else:
+            llm_client = OpenAIGenericClient(
+                LLMConfig(api_key="ollama", model=model, small_model=model, base_url=f"{cfg.base_url}/v1")
+            )
+            embedder = OpenAIEmbedder(
                 OpenAIEmbedderConfig(
                     api_key="ollama",
                     embedding_model=cfg.embed_model,
-                    embedding_dim=EMBEDDING_DIMS,
+                    embedding_dim=cfg.embed_dims,
                     base_url=f"{cfg.base_url}/v1",
                 )
-            ),
+            )
+        return Graphiti(
+            graph_driver=FalkorDriver(falkor_db=db),
+            llm_client=llm_client,
+            embedder=embedder,
             cross_encoder=BGERerankerClient(),
         )
 

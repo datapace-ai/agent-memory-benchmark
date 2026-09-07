@@ -22,24 +22,45 @@ from membench.config import ModelConfig
 from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.shared import EMBEDDING_DIMS, answer_from_context, session_text
+from membench.systems.shared import answer_from_context, api_key, session_text
 
 
 def cognee_environment(cfg: ModelConfig, seed: int, store_dir: Path) -> dict[str, str]:
+    if cfg.provider == "openai_compat":
+        llm = {
+            "LLM_PROVIDER": "custom",
+            "LLM_MODEL": f"openrouter/{cfg.openai_compat_model}",
+            "LLM_ENDPOINT": cfg.base_url,
+            "LLM_API_KEY": api_key(cfg) or "none",
+            "LLM_ARGS": json.dumps({"reasoning": {"enabled": False}}),
+        }
+        embedding = {
+            "EMBEDDING_PROVIDER": "fastembed",
+            "EMBEDDING_MODEL": cfg.embed_model,
+            "EMBEDDING_DIMENSIONS": str(cfg.embed_dims),
+            "HUGGINGFACE_TOKENIZER": cfg.embed_model,
+        }
+    else:
+        llm = {
+            "LLM_PROVIDER": "ollama",
+            "LLM_MODEL": cfg.openai_compat_model,
+            "LLM_ENDPOINT": f"{cfg.base_url}/v1",
+            "LLM_API_KEY": "ollama",
+            "LLM_ARGS": json.dumps({"think": False}),
+        }
+        embedding = {
+            "EMBEDDING_PROVIDER": "ollama",
+            "EMBEDDING_MODEL": cfg.embed_model,
+            "EMBEDDING_ENDPOINT": f"{cfg.base_url}/api/embed",
+            "EMBEDDING_API_KEY": "ollama",
+            "EMBEDDING_DIMENSIONS": str(cfg.embed_dims),
+            "HUGGINGFACE_TOKENIZER": "nomic-ai/nomic-embed-text-v1.5",
+        }
     return {
-        "LLM_PROVIDER": "ollama",
-        "LLM_MODEL": cfg.openai_compat_model,
-        "LLM_ENDPOINT": f"{cfg.base_url}/v1",
-        "LLM_API_KEY": "ollama",
+        **llm,
         "LLM_TEMPERATURE": str(cfg.temperature),
         "LLM_SEED": str(seed),
-        "LLM_ARGS": json.dumps({"think": False}),
-        "EMBEDDING_PROVIDER": "ollama",
-        "EMBEDDING_MODEL": cfg.embed_model,
-        "EMBEDDING_ENDPOINT": f"{cfg.base_url}/api/embed",
-        "EMBEDDING_API_KEY": "ollama",
-        "EMBEDDING_DIMENSIONS": str(EMBEDDING_DIMS),
-        "HUGGINGFACE_TOKENIZER": "nomic-ai/nomic-embed-text-v1.5",
+        **embedding,
         "DB_PROVIDER": "sqlite",
         "GRAPH_DATABASE_PROVIDER": "kuzu",
         "VECTOR_DB_PROVIDER": "lancedb",

@@ -20,7 +20,6 @@ from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
 from membench.systems.shared import (
-    EMBEDDING_DIMS,
     answer_from_context,
     chat_model,
     embeddings,
@@ -39,14 +38,14 @@ def default_memory_factory(cfg: ModelConfig, seed: int, store_dir: Path) -> Call
                 "llm": {"provider": "langchain", "config": {"model": chat_model(cfg, seed)}},
                 "embedder": {
                     "provider": "langchain",
-                    "config": {"model": embeddings(cfg), "embedding_dims": EMBEDDING_DIMS},
+                    "config": {"model": embeddings(cfg), "embedding_dims": cfg.embed_dims},
                 },
                 "vector_store": {
                     "provider": "qdrant",
                     "config": {
                         "path": str(store_dir / "qdrant"),
                         "collection_name": "membench",
-                        "embedding_model_dims": EMBEDDING_DIMS,
+                        "embedding_model_dims": cfg.embed_dims,
                         "on_disk": True,
                     },
                 },

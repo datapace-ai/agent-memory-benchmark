@@ -18,7 +18,6 @@ from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
 from membench.systems.shared import (
-    EMBEDDING_DIMS,
     answer_from_context,
     chat_model,
     embeddings,
@@ -32,7 +31,7 @@ def default_store_factory(cfg: ModelConfig) -> Callable[[], object]:
     def factory():
         from langgraph.store.memory import InMemoryStore
 
-        return InMemoryStore(index={"dims": EMBEDDING_DIMS, "embed": embeddings(cfg)})
+        return InMemoryStore(index={"dims": cfg.embed_dims, "embed": embeddings(cfg)})
 
     return factory
 

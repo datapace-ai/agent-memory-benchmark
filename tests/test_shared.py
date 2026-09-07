@@ -9,7 +9,6 @@ from membench.data.types import Session, Turn
 from membench.llm import LLMClient
 from membench.systems.base import ANSWER_SYSTEM_PROMPT, Answer
 from membench.systems.shared import (
-    EMBEDDING_DIMS,
     answer_from_context,
     chat_model,
     embeddings,
@@ -102,4 +101,28 @@ def test_embeddings_use_the_configured_model():
     emb = embeddings(CFG)
     assert emb.model == "nomic-embed-text"
     assert emb.base_url == "http://ollama.test"
-    assert EMBEDDING_DIMS == 768
+    assert CFG.embed_dims == 768
+
+
+def test_openai_compat_chat_model_points_at_the_provider_with_reasoning_off(monkeypatch):
+    pytest.importorskip("langchain_openai")
+    from dataclasses import replace
+
+    monkeypatch.setenv("TEST_ROUTER_KEY", "sk-test")
+    cfg = replace(CFG, provider="openai_compat", base_url="https://router.test/api/v1",
+                  api_key_env="TEST_ROUTER_KEY", openai_compat_model="vendor/model:free")
+    model = chat_model(cfg, seed=5)
+    assert model.model_name == "vendor/model:free"
+    assert model.openai_api_base == "https://router.test/api/v1"
+    assert model.temperature == 0.0 and model.seed == 5
+    assert model.extra_body == {"reasoning": {"enabled": False}}
+
+
+def test_openai_compat_embeddings_are_a_local_cpu_model():
+    pytest.importorskip("langchain_huggingface")
+    from dataclasses import replace
+
+    cfg = replace(CFG, provider="openai_compat", embed_model="BAAI/bge-small-en-v1.5", embed_dims=384)
+    emb = embeddings(cfg)
+    assert emb.model_name == "BAAI/bge-small-en-v1.5"
+    assert emb.model_kwargs == {"device": "cpu"}

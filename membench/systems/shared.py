@@ -59,7 +59,31 @@ def answer_from_context(
     )
 
 
+def api_key(cfg: ModelConfig) -> str:
+    import os
+
+    return os.environ.get(cfg.api_key_env or "", "") if cfg.api_key_env else "none"
+
+
 def chat_model(cfg: ModelConfig, seed: int):
+    """The products' internal model: a LangChain chat model with reasoning off.
+
+    Ollama gets ChatOllama with its native flag. An OpenAI-compatible provider
+    gets ChatOpenAI pointed at the provider with the `reasoning` extra that
+    OpenRouter understands; providers that do not know it ignore it.
+    """
+    if cfg.provider == "openai_compat":
+        from langchain_openai import ChatOpenAI
+
+        return ChatOpenAI(
+            model=cfg.openai_compat_model,
+            base_url=cfg.base_url,
+            api_key=api_key(cfg) or "none",
+            temperature=cfg.temperature,
+            seed=seed,
+            max_retries=6,
+            extra_body={"reasoning": {"enabled": False}},
+        )
     from langchain_ollama import ChatOllama
 
     return ChatOllama(
@@ -73,6 +97,16 @@ def chat_model(cfg: ModelConfig, seed: int):
 
 
 def embeddings(cfg: ModelConfig):
+    """Embeddings for the products. Ollama serves its own; otherwise a small
+    open model runs on the CPU, because no free API serves embeddings."""
+    if cfg.provider == "openai_compat":
+        from langchain_huggingface import HuggingFaceEmbeddings
+
+        return HuggingFaceEmbeddings(
+            model_name=cfg.embed_model,
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
     from langchain_ollama import OllamaEmbeddings
 
     return OllamaEmbeddings(model=cfg.embed_model, base_url=cfg.base_url)

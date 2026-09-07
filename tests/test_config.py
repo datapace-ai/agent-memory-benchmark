@@ -13,6 +13,7 @@ def test_load_models_returns_typed_config():
     assert cfg.seeds == (11, 22, 33)
     assert cfg.think is False
     assert cfg.min_request_interval_seconds == 3.0
+    assert cfg.embed_model == "BAAI/bge-small-en-v1.5" and cfg.embed_dims == 384
 
 
 def test_ollama_config_file_still_loads():

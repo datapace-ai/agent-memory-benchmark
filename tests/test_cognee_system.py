@@ -154,3 +154,22 @@ def test_calls_run_even_when_an_event_loop_is_not_running(tmp_path):
     assert asyncio.iscoroutinefunction(cognee.add)
     system.ingest(session())
     assert len(cognee.added) == 1
+
+
+def test_environment_for_an_openai_compatible_provider_uses_custom_llm_and_cpu_embeddings(tmp_path, monkeypatch):
+    from dataclasses import replace
+
+    monkeypatch.setenv("TEST_ROUTER_KEY", "sk-test")
+    cfg = replace(CFG, provider="openai_compat", base_url="https://openrouter.ai/api/v1",
+                  api_key_env="TEST_ROUTER_KEY", openai_compat_model="vendor/model:free",
+                  embed_model="BAAI/bge-small-en-v1.5", embed_dims=384)
+    env = cognee_environment(cfg, seed=11, store_dir=tmp_path)
+    assert env["LLM_PROVIDER"] == "custom"
+    assert env["LLM_MODEL"] == "openrouter/vendor/model:free"
+    assert env["LLM_ENDPOINT"] == "https://openrouter.ai/api/v1"
+    assert env["LLM_API_KEY"] == "sk-test"
+    assert json.loads(env["LLM_ARGS"]) == {"reasoning": {"enabled": False}}
+    assert env["EMBEDDING_PROVIDER"] == "fastembed"
+    assert env["EMBEDDING_MODEL"] == "BAAI/bge-small-en-v1.5"
+    assert env["EMBEDDING_DIMENSIONS"] == "384"
+    assert "EMBEDDING_ENDPOINT" not in env
