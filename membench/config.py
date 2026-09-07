@@ -22,6 +22,9 @@ class ModelConfig:
     seeds: tuple[int, ...]
     think: bool | None = None
     openai_compat_model: str = "qwen3-nothink:14b"
+    provider: str = "ollama"
+    api_key_env: str | None = None
+    min_request_interval_seconds: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -43,7 +46,10 @@ def load_models(path: Path) -> ModelConfig:
         max_answer_tokens=int(raw["max_answer_tokens"]),
         seeds=tuple(int(s) for s in raw["seeds"]),
         think=raw.get("think"),
-        openai_compat_model=raw.get("openai_compat_model", "qwen3-nothink:14b"),
+        openai_compat_model=raw.get("openai_compat_model", raw["answer_model"]),
+        provider=raw.get("provider", "ollama"),
+        api_key_env=raw.get("api_key_env"),
+        min_request_interval_seconds=float(raw.get("min_request_interval_seconds", 0.0)),
     )
 
 

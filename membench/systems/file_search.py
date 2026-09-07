@@ -154,7 +154,7 @@ class FileSearchSystem(MemorySystem):
                 result = self._tool(name, args)
                 retrieval_seconds += time.perf_counter() - t0
                 transcript.append(f"[{name}({json.dumps(args)})]\n{result[:2000]}")
-                messages.append({"role": "tool", "content": result, "tool_name": name})
+                messages.append(self._llm.tool_message(name, tool_call.get("id"), result))
                 calls += 1
         return Answer(
             text=text,

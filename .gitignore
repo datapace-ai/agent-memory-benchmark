@@ -9,3 +9,4 @@ results/runs/*.lock
 results/vendor-smoke/
 data/vendor-stores/
 models/*.orig
+.env

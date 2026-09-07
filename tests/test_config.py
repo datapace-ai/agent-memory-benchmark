@@ -3,12 +3,24 @@ from membench.config import REPO_ROOT, load_models, load_systems
 
 def test_load_models_returns_typed_config():
     cfg = load_models(REPO_ROOT / "configs" / "models.yaml")
-    assert cfg.base_url == "http://localhost:11434"
-    assert cfg.answer_model == "qwen3:14b"
+    assert cfg.provider == "openai_compat"
+    assert cfg.base_url == "https://openrouter.ai/api/v1"
+    assert cfg.api_key_env == "OPENROUTER_API_KEY"
+    assert cfg.answer_model == "nvidia/nemotron-3.5-lightning:free"
+    assert cfg.openai_compat_model == "nvidia/nemotron-3.5-lightning:free"
     assert cfg.num_ctx == 40960
     assert cfg.temperature == 0.0
     assert cfg.seeds == (11, 22, 33)
+    assert cfg.think is False
+    assert cfg.min_request_interval_seconds == 3.0
+
+
+def test_ollama_config_file_still_loads():
+    cfg = load_models(REPO_ROOT / "configs" / "models.ollama.yaml")
+    assert cfg.provider == "ollama"
+    assert cfg.base_url == "http://localhost:11434"
     assert cfg.openai_compat_model == "qwen3-nothink:14b"
+    assert cfg.min_request_interval_seconds == 0.0
 
 
 def test_load_systems_lists_phase_two_systems():

@@ -1,10 +1,15 @@
-base_url: http://localhost:11434
-answer_model: qwen3:14b
-judge_model: qwen3:14b
-embed_model: nomic-embed-text
+# OpenRouter, free Nemotron 3.5 Lightning. Zero cost; rate-limited per minute and per day.
+provider: openai_compat
+base_url: https://openrouter.ai/api/v1
+api_key_env: OPENROUTER_API_KEY
+answer_model: nvidia/nemotron-3.5-lightning:free
+judge_model: nvidia/nemotron-3.5-lightning:free
+openai_compat_model: nvidia/nemotron-3.5-lightning:free
+# Local CPU embeddings for the products; the API has no free embedding model.
+embed_model: BAAI/bge-small-en-v1.5
 num_ctx: 40960
 temperature: 0.0
 max_answer_tokens: 512
 seeds: [11, 22, 33]
 think: false
-openai_compat_model: qwen3-nothink:14b
+min_request_interval_seconds: 3.0
