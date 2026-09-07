@@ -1,0 +1,132 @@
+{
+  "systems": {
+    "oracle": {
+      "questions": 5,
+      "errors": 0,
+      "truncated": 0,
+      "accuracy": {
+        "longmemeval": 0.6,
+        "zep": 0.6,
+        "mem0": 0.8
+      },
+      "accuracy_ci95": [
+        0.2,
+        1.0
+      ],
+      "by_ability": {
+        "extraction": {
+          "longmemeval": 1.0,
+          "zep": 1.0,
+          "mem0": 1.0
+        },
+        "multi_session": {
+          "longmemeval": 0.0,
+          "zep": 0.0,
+          "mem0": 1.0
+        },
+        "temporal": {
+          "longmemeval": 1.0,
+          "zep": 1.0,
+          "mem0": 1.0
+        },
+        "knowledge_update": {
+          "longmemeval": 0.0,
+          "zep": 0.0,
+          "mem0": 0.0
+        },
+        "abstention": {
+          "longmemeval": 1.0,
+          "zep": 1.0,
+          "mem0": 1.0
+        }
+      },
+      "forgetting_curve": {
+        "0": 0.0,
+        "1": 0.5,
+        "6": 1.0,
+        "8": 1.0
+      },
+      "stale_rate": 0.0,
+      "tokens_per_answer": 6386.6,
+      "answer_latency_p50": 27.25018191699928,
+      "answer_latency_p95": 63.94261173299164,
+      "retrieval_latency_p50": 1.4958000974729657e-05,
+      "retrieval_latency_p95": 3.0366194550879296e-05,
+      "ingest_seconds_per_session": 0.0005074414504633751,
+      "store_tokens_final": 6920.4,
+      "share_of_oracle": 1.0,
+      "gap_to_best_baseline": 0.19999999999999996
+    },
+    "window": {
+      "questions": 5,
+      "errors": 0,
+      "truncated": 0,
+      "accuracy": {
+        "longmemeval": 0.4,
+        "zep": 0.4,
+        "mem0": 0.6
+      },
+      "accuracy_ci95": [
+        0.0,
+        0.8
+      ],
+      "by_ability": {
+        "extraction": {
+          "longmemeval": 1.0,
+          "zep": 1.0,
+          "mem0": 1.0
+        },
+        "multi_session": {
+          "longmemeval": 0.0,
+          "zep": 0.0,
+          "mem0": 1.0
+        },
+        "temporal": {
+          "longmemeval": 0.0,
+          "zep": 0.0,
+          "mem0": 0.0
+        },
+        "knowledge_update": {
+          "longmemeval": 0.0,
+          "zep": 0.0,
+          "mem0": 0.0
+        },
+        "abstention": {
+          "longmemeval": 1.0,
+          "zep": 1.0,
+          "mem0": 1.0
+        }
+      },
+      "forgetting_curve": {
+        "0": 0.0,
+        "1": 0.5,
+        "6": 0.0,
+        "8": 1.0
+      },
+      "stale_rate": 0.0,
+      "tokens_per_answer": 24623.0,
+      "answer_latency_p50": 200.23840441700304,
+      "answer_latency_p95": 234.0937864005973,
+      "retrieval_latency_p50": 6.600000779144466e-05,
+      "retrieval_latency_p95": 0.0001365497941151261,
+      "ingest_seconds_per_session": 0.0007475500002328772,
+      "store_tokens_final": 30488.0,
+      "share_of_oracle": 0.6666666666666667,
+      "gap_to_best_baseline": 0.0
+    }
+  },
+  "rankings": {
+    "longmemeval": [
+      "window"
+    ],
+    "zep": [
+      "window"
+    ],
+    "mem0": [
+      "window"
+    ]
+  },
+  "ranking_stable": true,
+  "oracle_accuracy": 0.6,
+  "best_baseline_accuracy": 0.4
+}
