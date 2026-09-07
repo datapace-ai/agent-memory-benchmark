@@ -1,0 +1,8 @@
+# Model tracks: the same questions and the same judge, a different answerer
+# (and the same model inside each product). One results file per track.
+judge_model: google/gemma-4-31b-it:free
+tracks:
+  - name: nemotron-3.5-lightning
+    answer_model: nvidia/nemotron-3.5-lightning:free
+  - name: gemma-4-31b
+    answer_model: google/gemma-4-31b-it:free

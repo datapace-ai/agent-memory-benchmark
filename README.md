@@ -47,6 +47,15 @@ A full run is `uv run python -m membench.run` followed by
 `uv run python -m membench.report`. It is resumable: rerun the same command
 after an interruption and it continues where it stopped.
 
+## Model tracks
+
+The same questions and the same judge can be run with different answerers,
+which also become the model inside each product. `configs/tracks.yaml` lists
+the tracks; `scripts/run_tracks.sh` runs them one after another into
+`results/runs/track-<name>.jsonl` and `results/tracks/<name>/`. The judge is
+one model for every track, so accuracy differences between tracks come from
+the answerer, not the grader.
+
 ## Cost
 
 Zero. Everything runs on a local model.
