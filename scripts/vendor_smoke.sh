@@ -8,8 +8,10 @@ if [ -e results/runs/runs.jsonl.lock ]; then
   exit 2
 fi
 export UV_PROJECT_ENVIRONMENT=.venv-vendors
+./scripts/create_nothink_model.sh
+./scripts/letta_server.sh
 uv run python -m membench.run \
-  --limit 2 --seeds 11 --systems mem0,langmem,cognee \
+  --limit 2 --seeds 11 --systems file,mem0,langmem,cognee,graphiti,letta \
   --out results/runs/vendor-smoke.jsonl
 uv run python -m membench.report \
   --runs results/runs/vendor-smoke.jsonl \

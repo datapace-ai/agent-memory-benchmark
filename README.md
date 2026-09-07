@@ -25,8 +25,9 @@ has changed.
 | `mem0` | Mem0 open source: extracted memories in a local Qdrant store. |
 | `langmem` | LangMem: a LangGraph memory store managed by its background extractor. |
 | `cognee` | Cognee: a knowledge graph plus vector index built from the sessions. |
-
-Graphiti (Zep's engine), Letta, and a file-search baseline arrive in phase 3.
+| `file` | No product. Dated session files the model lists, reads and greps with tools. |
+| `graphiti` | Zep's open-source engine on an embedded FalkorDB, local BGE reranker. |
+| `letta` | Letta's agent runtime on its self-hosted server; the agent answers itself. |
 Product adapters live in a second environment until the phase 1 run finishes:
 `UV_PROJECT_ENVIRONMENT=.venv-vendors uv sync --extra dev --extra vendors`.
 

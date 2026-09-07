@@ -50,11 +50,21 @@ store size.
 | --- | --- | --- | --- | --- |
 | Mem0 open source | mem0ai 2.0.20 | `Memory.add(messages, user_id)` per session | `Memory.search(query, filters={user_id}, top_k)` | LangChain `ChatOllama(reasoning=False)` through Mem0's `langchain` provider |
 | LangMem | langmem 0.0.30 | `MemoryStoreManager.invoke({messages})` per session | `MemoryStoreManager.search(query)` | `ChatOllama(reasoning=False)` |
-| Cognee | cognee 1.5.4 | `cognee.add(text, dataset)` then `cognee.cognify([dataset])` per session | `cognee.search(GRAPH_COMPLETION, only_context=True)` | `LLM_ARGS={"think": false}` in Cognee's environment; verified on the vendor smoke by comparing ingestion time against the other products |
+| File search (baseline) | none | one dated text file per session | the model's own `list_files`, `read_file`, `grep` calls, at most 8, then it must answer | `think: false` on every call |
+| Graphiti (Zep's engine) | graphiti-core 0.30.1, embedded FalkorDB | `add_episode` per turn with the session date as reference time, one group per namespace | `Graphiti.search(query, group_ids)` edge facts | the `qwen3-nothink:14b` variant through the OpenAI-compatible endpoint; BGE reranker runs locally |
+| Letta | letta-client 1.12.1 against the `letta/letta` Docker server | two user messages per session, the dated first turn then the full transcript, at most 6 agent steps | none: the agent answers inside Letta; tokens are Letta's reported usage | `reasoning=False`, `enable_reasoner=False` on the agent |
+| Cognee | cognee 1.5.4 | `cognee.add(text, dataset)` then `cognee.cognify([dataset])` per session | `cognee.search(GRAPH_COMPLETION, only_context=True)` | the `qwen3-nothink:14b` variant through the OpenAI-compatible endpoint, plus `LLM_ARGS={"think": false}` |
 
 Reset semantics: Mem0 deletes the namespace's memories; LangMem builds a fresh
 in-memory store; Cognee uses one dataset per namespace and prunes the whole
-system once at the start of a run.
+system once at the start of a run; file search empties the namespace folder;
+Graphiti opens a fresh embedded database; Letta deletes and recreates the agent.
+
+The `qwen3-nothink:14b` variant is `qwen3:14b` with two template edits that
+force the `/no_think` switch and an empty think block on every turn, for
+libraries that reach Ollama through its OpenAI-compatible endpoint, which has
+no reasoning flag. `scripts/create_nothink_model.sh` builds it and
+`models/Modelfile.qwen3-nothink` is committed.
 
 Vendor smoke results (ingestion seconds per session per product, whether
 Cognee's reasoning flag reached Ollama, adapter failures): TO BE RECORDED after
