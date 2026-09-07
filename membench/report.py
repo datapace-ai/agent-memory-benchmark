@@ -107,7 +107,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     questions = {q.question_id: q for q in read_jsonl(args.questions)}
-    records = [json.loads(line) for line in args.runs.read_text().splitlines() if line.strip()]
+    latest: dict[tuple, dict] = {}
+    for line in args.runs.read_text().splitlines():
+        if line.strip():
+            record = json.loads(line)
+            latest[(record["system"], record["question_id"], record["seed"])] = record
+    records = list(latest.values())
     summary = summarize(records, questions)
     judges = {str((r.get("provenance") or {}).get("judge_model", "")) for r in records}
     answerers = {str((r.get("provenance") or {}).get("answer_model", "")) for r in records}

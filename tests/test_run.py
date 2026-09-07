@@ -151,3 +151,11 @@ def test_run_units_with_workers_writes_every_unit_once(tmp_path, monkeypatch):
     assert len(lines) == 12
     assert len({(l["system"], l["question_id"], l["seed"]) for l in lines}) == 12
     assert all(l["correct_longmemeval"] is True and l["provenance"] == {"p": 1} for l in lines)
+
+
+def test_load_done_can_exclude_error_records_for_retry(tmp_path):
+    path = tmp_path / "runs.jsonl"
+    append_record(path, {"system": "window", "question_id": "q1", "seed": 11, "error": "boom"})
+    append_record(path, {"system": "window", "question_id": "q2", "seed": 11, "error": None})
+    assert load_done(path) == {("window", "q1", 11), ("window", "q2", 11)}
+    assert load_done(path, retry_errors=True) == {("window", "q2", 11)}

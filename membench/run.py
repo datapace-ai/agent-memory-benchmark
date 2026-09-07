@@ -31,7 +31,10 @@ def record_key(record: dict) -> tuple[str, str, int]:
     return (record["system"], record["question_id"], int(record["seed"]))
 
 
-def load_done(path: Path) -> set[tuple[str, str, int]]:
+def load_done(path: Path, retry_errors: bool = False) -> set[tuple[str, str, int]]:
+    """Units already recorded. With retry_errors, records that carry an error
+    are not counted, so a rerun redoes them; the old error line stays in the
+    file and the reporter keeps the last record per key."""
     if not path.exists():
         return set()
     done = set()
@@ -39,9 +42,13 @@ def load_done(path: Path) -> set[tuple[str, str, int]]:
         if not line.strip():
             continue
         try:
-            done.add(record_key(json.loads(line)))
+            record = json.loads(line)
         except Exception:
             continue
+        if retry_errors and record.get("error"):
+            done.discard(record_key(record))
+            continue
+        done.add(record_key(record))
     return done
 
 
@@ -128,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--models-config", type=Path, default=REPO_ROOT / "configs" / "models.yaml")
     parser.add_argument("--answer-model", default="", help="override the answerer for this run (a model track)")
     parser.add_argument("--judge-model", default="", help="override the judge; keep one judge across tracks")
+    parser.add_argument("--retry-errors", action="store_true", help="redo units whose record carries an error")
     parser.add_argument(
         "--workers", type=int, default=0,
         help="concurrent units; 0 picks 1 for a local model and 4 for an API provider",
@@ -171,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     lock = acquire_lock(args.out)
-    done = load_done(args.out)
+    done = load_done(args.out, retry_errors=args.retry_errors)
     work = plan_work(systems, questions, seeds, done)
     print(f"{len(done)} units done, {len(work)} to run", flush=True)
 

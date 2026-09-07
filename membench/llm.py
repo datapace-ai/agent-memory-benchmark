@@ -225,8 +225,11 @@ class LLMClient:
                     last = f"HTTP {response.status_code}: {response.text[:300]}"
                     retry_after = response.headers.get("Retry-After")
                     if response.status_code == 429:
-                        print(f"[llm] rate limited (attempt {attempt + 1}/{retries}), retry-after={retry_after}",
-                              file=sys.stderr, flush=True)
+                        print(
+                            f"[llm] rate limited (attempt {attempt + 1}/{retries}), "
+                            f"retry-after={retry_after}, body={response.text[:160]!r}",
+                            file=sys.stderr, flush=True,
+                        )
                     if retry_after and attempt < retries - 1:
                         try:
                             self._sleep(min(float(retry_after), 120.0))

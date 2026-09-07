@@ -106,3 +106,30 @@ def test_render_markdown_names_the_answerer_and_judge_when_present():
     s = dict(SUMMARY); s["answer_model"] = "vendor/a:free"; s["judge_model"] = "vendor/j:free"
     text = render_markdown(s)
     assert "Answerer: vendor/a:free. Judge: vendor/j:free." in text
+
+
+def test_main_keeps_the_last_record_per_unit(tmp_path):
+    runs = tmp_path / "runs.jsonl"
+    questions = tmp_path / "questions.jsonl"
+    question = {
+        "question_id": "q1", "question_type": "multi-session", "ability": "multi_session",
+        "question": "?", "answer": "a", "question_date": "2023/06/01 (Thu) 09:00",
+        "is_abstention": False, "evidence_session_ids": ["s0"],
+        "sessions": [{"session_id": "s0", "date": "2023/05/01 (Mon) 10:00", "order": 0, "turns": []}],
+    }
+    questions.write_text(json.dumps(question) + "\n")
+    base = {
+        "question_id": "q1", "system": "window", "seed": 11, "answer_text": "", "context": "",
+        "prompt_tokens": 0, "completion_tokens": 0, "retrieval_seconds": 0.0, "answer_seconds": 0.0,
+        "ingest_seconds": 0.0, "sessions_ingested": 0, "store_items": 0, "store_tokens": 0,
+        "truncated": False, "correct_zep": False, "correct_mem0": False, "stale": None,
+    }
+    first = dict(base, error="boom", correct_longmemeval=False)
+    second = dict(base, error=None, correct_longmemeval=True, answer_text="a")
+    runs.write_text(json.dumps(first) + "\n" + json.dumps(second) + "\n")
+    out_dir = tmp_path / "out"
+    assert main(["--runs", str(runs), "--questions", str(questions), "--out-dir", str(out_dir)]) == 0
+    written = json.loads((out_dir / "summary.json").read_text())
+    assert written["systems"]["window"]["questions"] == 1
+    assert written["systems"]["window"]["accuracy"]["longmemeval"] == 1.0
+    assert written["systems"]["window"]["errors"] == 0
