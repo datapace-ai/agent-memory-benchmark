@@ -4,7 +4,7 @@ import httpx
 
 from membench.config import ModelConfig
 from membench.data.types import Question
-from membench.judge.judge import Judge, Verdicts
+from membench.judge.judge import GRADER_SYSTEM, JUDGE_MAX_TOKENS, Judge, Verdicts, parse_yes_no
 from membench.judge.prompts import RULES, longmemeval_prompt
 from membench.llm import LLMClient
 
@@ -120,3 +120,22 @@ def test_json_verdict_survives_surrounding_prose():
     judge, _ = judge_with(["yes", 'Sure. {"correct": true} done', 'Nope {"correct": false}'])
     out = judge.grade(question(), "Paris", seed=11)
     assert out.zep is True and out.mem0 is False
+
+
+def test_parse_yes_no_reads_a_trailing_verdict_after_analysis():
+    assert parse_yes_no("1. The answer matches.\n2. Nothing missing.\n\nyes") is True
+    assert parse_yes_no("Analysis: the response says 15 days, gold says not enough.\n**Answer: No**") is False
+    assert parse_yes_no("1. Scenario Interpretation: the user asks") is None
+    assert parse_yes_no("") is None
+    assert parse_yes_no("Yes, the response is correct. No issues.") is True
+
+
+def test_grade_flags_an_unparsed_verdict_and_uses_a_one_word_instruction():
+    judge, seen = judge_with(["1. Scenario Interpretation: cut off", '{"correct": true}', '{"correct": true}'])
+    out = judge.grade(question(), "Paris", seed=11)
+    assert out.longmemeval is False
+    assert out.raw.get("longmemeval_unparsed") == "1"
+    first = seen[0]
+    assert first["messages"][0]["content"] == GRADER_SYSTEM
+    assert "exactly one word" in GRADER_SYSTEM
+    assert first["options"]["num_predict"] == JUDGE_MAX_TOKENS >= 200

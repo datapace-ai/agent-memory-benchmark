@@ -133,6 +133,13 @@ class FileSearchSystem(MemorySystem):
         calls = 0
         while True:
             allow_tools = calls < self._max_calls
+            if not allow_tools and messages[-1].get("role") != "user":
+                messages.append({
+                    "role": "user",
+                    "content": "The tools are no longer available. Answer the question now, in one or "
+                    "two sentences, from what you found. If you found nothing, reply exactly: "
+                    "The information is not available.",
+                })
             response = self._llm.chat(messages, TOOLS if allow_tools else None, self._seed)
             prompt_tokens += response.prompt_tokens
             completion_tokens += response.completion_tokens

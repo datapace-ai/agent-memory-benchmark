@@ -94,6 +94,7 @@ def test_loop_stops_at_max_tool_calls_and_forces_an_answer(tmp_path):
     assert len(state["bodies"]) == 4
     assert all("tools" in b for b in state["bodies"][:3])
     assert "tools" not in state["bodies"][-1]
+    assert "no longer available" in state["bodies"][-1]["messages"][-1]["content"]
 
 
 def test_unknown_tool_and_missing_file_return_errors_not_exceptions(tmp_path):

@@ -56,6 +56,7 @@ def summarize(records: list[dict], questions: dict[str, Question]) -> dict:
         systems[name] = {
             "questions": len(rows),
             "errors": sum(1 for r in rows if r.get("error")),
+            "judge_unparsed": sum(1 for r in rows if (r.get("judge_raw") or {}).get("longmemeval_unparsed")),
             "truncated": sum(1 for r in rows if r.get("truncated")),
             "accuracy": accuracy,
             "accuracy_ci95": [low, high],

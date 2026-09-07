@@ -41,6 +41,9 @@ def render_markdown(summary: dict) -> str:
             f"{s['answer_latency_p95']:.1f} | {s['errors']} |"
         )
 
+    unparsed = sum(s.get("judge_unparsed", 0) for s in summary["systems"].values())
+    if unparsed:
+        lines += ["", f"Judge verdicts that never said yes or no, scored as wrong: {unparsed}. Re-judge before publishing."]
     stability = (
         "Ranking is stable across all three judge rules."
         if summary["ranking_stable"]
