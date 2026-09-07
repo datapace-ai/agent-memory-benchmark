@@ -2,7 +2,11 @@ import json
 
 from membench.config import SystemConfig
 from membench.data.types import Question
-from membench.run import append_record, load_done, plan_work, record_key
+import os
+
+import pytest
+
+from membench.run import acquire_lock, append_record, load_done, plan_work, record_key, release_lock
 
 
 def question(qid):
@@ -62,3 +66,28 @@ def test_appended_records_are_valid_json_lines(tmp_path):
     path = tmp_path / "runs.jsonl"
     append_record(path, {"system": "window", "question_id": "q1", "seed": 11, "nested": {"a": 1}})
     assert json.loads(path.read_text().strip())["nested"] == {"a": 1}
+
+
+def test_acquire_lock_refuses_while_holder_is_alive(tmp_path):
+    out = tmp_path / "runs.jsonl"
+    lock = acquire_lock(out)
+    assert lock.read_text() == str(os.getpid())
+    with pytest.raises(RuntimeError):
+        acquire_lock(out)
+    release_lock(lock)
+    assert not lock.exists()
+
+
+def test_acquire_lock_replaces_a_stale_lock(tmp_path):
+    out = tmp_path / "runs.jsonl"
+    stale = out.with_name("runs.jsonl.lock")
+    dead_pid = 2**22 - 7
+    try:
+        os.kill(dead_pid, 0)
+        pytest.skip("pid unexpectedly alive")
+    except ProcessLookupError:
+        pass
+    stale.write_text(str(dead_pid))
+    lock = acquire_lock(out)
+    assert lock.read_text() == str(os.getpid())
+    release_lock(lock)

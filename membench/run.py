@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import sys
 import time
@@ -46,6 +47,39 @@ def append_record(path: Path, record: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a") as handle:
         handle.write(json.dumps(record) + "\n")
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def acquire_lock(out: Path) -> Path:
+    """One writer per run file. Two concurrent runners would both append and
+    produce duplicate records, which is exactly what happened once."""
+    lock = out.with_name(out.name + ".lock")
+    if lock.exists():
+        try:
+            holder = int(lock.read_text().strip())
+        except ValueError:
+            holder = 0
+        if holder and _pid_alive(holder):
+            raise RuntimeError(f"another runner (pid {holder}) is writing {out}; refusing to start")
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    lock.write_text(str(os.getpid()))
+    return lock
+
+
+def release_lock(lock: Path) -> None:
+    try:
+        lock.unlink()
+    except FileNotFoundError:
+        pass
 
 
 def plan_work(
@@ -105,10 +139,19 @@ def main(argv: list[str] | None = None) -> int:
         "python": platform.python_version(),
     }
 
+    lock = acquire_lock(args.out)
     done = load_done(args.out)
     work = plan_work(systems, questions, seeds, done)
     print(f"{len(done)} units done, {len(work)} to run", flush=True)
 
+    try:
+        _run_units(work, llm, judge, provenance, args.out)
+    finally:
+        release_lock(lock)
+    return 0
+
+
+def _run_units(work, llm: LLMClient, judge: Judge, provenance: dict, out: Path) -> None:
     for index, (system_cfg, question, seed) in enumerate(work, start=1):
         started = time.perf_counter()
         system = build(system_cfg, llm, seed=seed)
@@ -134,15 +177,13 @@ def main(argv: list[str] | None = None) -> int:
             )
 
         record["provenance"] = provenance
-        append_record(args.out, record)
+        append_record(out, record)
         print(
             f"[{index}/{len(work)}] {system_cfg.name} {question.question_id} "
             f"({question.ability}) seed={seed} correct={record['correct_longmemeval']} "
             f"tok={record['prompt_tokens']} {time.perf_counter() - started:.1f}s",
             flush=True,
         )
-
-    return 0
 
 
 if __name__ == "__main__":
