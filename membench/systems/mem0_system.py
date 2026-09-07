@@ -11,6 +11,8 @@ Reference: mem0ai/memory-benchmarks LongMemEval runner.
 
 from __future__ import annotations
 
+import re
+import shutil
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -27,11 +29,21 @@ from membench.systems.shared import (
 )
 
 
-def default_memory_factory(cfg: ModelConfig, seed: int, store_dir: Path) -> Callable[[], object]:
-    def factory():
+def _safe(namespace: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_]", "_", namespace)
+
+
+def default_memory_factory(cfg: ModelConfig, seed: int, store_dir: Path) -> Callable[[str], object]:
+    """One on-disk store per namespace. Qdrant's local mode holds a file lock,
+    so concurrent units must never share a path."""
+
+    def factory(namespace: str):
         from mem0 import Memory
 
-        store_dir.mkdir(parents=True, exist_ok=True)
+        path = store_dir / _safe(namespace)
+        if path.exists():
+            shutil.rmtree(path)
+        path.mkdir(parents=True)
         return Memory.from_config(
             {
                 "version": "v1.1",
@@ -43,13 +55,13 @@ def default_memory_factory(cfg: ModelConfig, seed: int, store_dir: Path) -> Call
                 "vector_store": {
                     "provider": "qdrant",
                     "config": {
-                        "path": str(store_dir / "qdrant"),
+                        "path": str(path / "qdrant"),
                         "collection_name": "membench",
                         "embedding_model_dims": cfg.embed_dims,
                         "on_disk": True,
                     },
                 },
-                "history_db_path": str(store_dir / "history.db"),
+                "history_db_path": str(path / "history.db"),
             }
         )
 
@@ -70,7 +82,7 @@ class Mem0System(MemorySystem):
         seed: int,
         store_dir: Path,
         top_k: int = 10,
-        memory_factory: Callable[[], object] | None = None,
+        memory_factory: Callable[[str], object] | None = None,
     ) -> None:
         self.name = name
         self._llm = llm
@@ -83,13 +95,14 @@ class Mem0System(MemorySystem):
 
     def _mem(self):
         if self._memory is None:
-            self._memory = self._factory()
+            raise RuntimeError("reset must be called before use")
         return self._memory
 
     def reset(self, namespace: str) -> None:
         self._user = namespace
         self._sessions = 0
-        self._mem().delete_all(user_id=namespace)
+        self._memory = self._factory(namespace)
+        self._memory.delete_all(user_id=namespace)
 
     def ingest(self, session: Session) -> IngestStats:
         if self._user is None:

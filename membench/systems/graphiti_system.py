@@ -76,10 +76,8 @@ class LocalEmbedder:
         return [[float(x) for x in v[: self._dims]] for v in vecs]
 
 
-def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[], object]:
-    state = {"n": 0}
-
-    def factory():
+def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[str], object]:
+    def factory(namespace: str):
         from graphiti_core import Graphiti
         from graphiti_core.cross_encoder.bge_reranker_client import BGERerankerClient
         from graphiti_core.driver.falkordb_driver import FalkorDriver
@@ -88,8 +86,7 @@ def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[], 
         from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
         from redislite.falkordb_client import FalkorDB
 
-        state["n"] += 1
-        path = store_dir / f"graph-{state['n']}"
+        path = store_dir / _group(namespace)
         if path.exists():
             shutil.rmtree(path)
         path.mkdir(parents=True)
@@ -131,7 +128,7 @@ class GraphitiSystem(MemorySystem):
         seed: int,
         store_dir: Path,
         top_k: int = 10,
-        graphiti_factory: Callable[[], object] | None = None,
+        graphiti_factory: Callable[[str], object] | None = None,
     ) -> None:
         self.name = name
         self._llm = llm
@@ -149,7 +146,7 @@ class GraphitiSystem(MemorySystem):
                 _run(self._graphiti.close())
             except Exception:
                 pass
-        self._graphiti = self._factory()
+        self._graphiti = self._factory(namespace)
         _run(self._graphiti.build_indices_and_constraints())
         self._group = _group(namespace)
         self._episodes = 0

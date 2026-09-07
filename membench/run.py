@@ -194,8 +194,21 @@ def main(argv: list[str] | None = None) -> int:
 def run_unit(system_cfg: SystemConfig, question: Question, seed: int, llm: LLMClient,
              models: ModelConfig, judge: Judge, provenance: dict) -> dict:
     """One (system, question, seed): build, run the clock, grade, stamp provenance."""
-    system = build(system_cfg, llm, seed=seed, models=models)
-    run = run_question(system, question, seed, evidence_only=evidence_only(system_cfg))
+    try:
+        system = build(system_cfg, llm, seed=seed, models=models)
+        run = run_question(system, question, seed, evidence_only=evidence_only(system_cfg))
+    except Exception as exc:
+        import traceback
+
+        from membench.protocol.clock import QuestionRun
+
+        run = QuestionRun(
+            question_id=question.question_id, system=system_cfg.name, seed=seed, answer_text="",
+            context="", prompt_tokens=0, completion_tokens=0, retrieval_seconds=0.0,
+            answer_seconds=0.0, ingest_seconds=0.0, sessions_ingested=0, store_items=0,
+            store_tokens=0, truncated=False,
+            error=f"system failed: {exc}\n{traceback.format_exc(limit=4)}",
+        )
     record = run.to_dict()
     if run.error is None:
         verdicts = judge.grade(question, run.answer_text, seed)
@@ -244,9 +257,13 @@ def _run_units(
             finish(system_cfg, question, seed, record, time.perf_counter() - t0)
         return
 
+    # Systems whose library keeps process-global state (Cognee) run one unit at
+    # a time; everything else shares the pool.
+    serial = [u for u in work if u[0].params.get("serial")]
+    parallel = [u for u in work if not u[0].params.get("serial")]
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {}
-        for system_cfg, question, seed in work:
+        for system_cfg, question, seed in parallel:
             t0 = time.perf_counter()
             fut = pool.submit(run_unit, system_cfg, question, seed, llm, models, judge, provenance)
             futures[fut] = (system_cfg, question, seed, t0)
@@ -254,6 +271,10 @@ def _run_units(
             system_cfg, question, seed, t0 = futures[fut]
             record = fut.result()
             finish(system_cfg, question, seed, record, time.perf_counter() - t0)
+    for system_cfg, question, seed in serial:
+        t0 = time.perf_counter()
+        record = run_unit(system_cfg, question, seed, llm, models, judge, provenance)
+        finish(system_cfg, question, seed, record, time.perf_counter() - t0)
 
 
 if __name__ == "__main__":

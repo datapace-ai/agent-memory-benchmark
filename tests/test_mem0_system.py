@@ -65,7 +65,7 @@ def make(tmp_path) -> tuple[Mem0System, FakeMemory]:
     memory = FakeMemory()
     system = Mem0System(
         name="mem0", llm=fake_llm(), cfg=CFG, seed=11, store_dir=tmp_path / "mem0",
-        top_k=5, memory_factory=lambda: memory,
+        top_k=5, memory_factory=lambda namespace: memory,
     )
     return system, memory
 

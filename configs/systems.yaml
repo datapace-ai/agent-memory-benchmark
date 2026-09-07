@@ -25,6 +25,7 @@ systems:
     kind: cognee
     params:
       top_k: 10
+      serial: true
   - name: graphiti
     kind: graphiti
     params:

@@ -159,3 +159,61 @@ def test_load_done_can_exclude_error_records_for_retry(tmp_path):
     append_record(path, {"system": "window", "question_id": "q2", "seed": 11, "error": None})
     assert load_done(path) == {("window", "q1", 11), ("window", "q2", 11)}
     assert load_done(path, retry_errors=True) == {("window", "q2", 11)}
+
+
+def test_run_unit_records_a_build_failure_instead_of_raising(monkeypatch):
+    import membench.run as run_mod
+
+    def boom(cfg, llm, seed=0, models=None):
+        raise RuntimeError("store is locked")
+
+    monkeypatch.setattr(run_mod, "build", boom)
+    record = run_mod.run_unit(systems()[1], question("q1"), 11, llm=None, models=None, judge=None, provenance={})
+    assert record["error"] and "store is locked" in record["error"]
+    assert record["correct_longmemeval"] is False and record["system"] == "window"
+
+
+def test_serial_systems_run_after_the_pool_one_at_a_time(tmp_path, monkeypatch):
+    import threading
+
+    import membench.run as run_mod
+    from membench.judge.judge import Verdicts
+    from membench.systems.base import Answer, IngestStats, MemorySystem
+
+    active = {"n": 0, "max_serial": 0}
+    lock = threading.Lock()
+
+    class Sys(MemorySystem):
+        def __init__(self, name):
+            self.name = name
+
+        def reset(self, ns):
+            pass
+
+        def ingest(self, s):
+            return IngestStats(0.0, 1, 1)
+
+        def answer(self, q, d):
+            import time
+
+            if self.name == "cognee":
+                with lock:
+                    active["n"] += 1
+                    active["max_serial"] = max(active["max_serial"], active["n"])
+                time.sleep(0.02)
+                with lock:
+                    active["n"] -= 1
+            return Answer("a", "", 1, 1, 0.0, 0.0)
+
+    class J:
+        def grade(self, *a):
+            return Verdicts(True, True, True, None, {})
+
+    monkeypatch.setattr(run_mod, "build", lambda cfg, llm, seed=0, models=None: Sys(cfg.name))
+    cognee = SystemConfig(name="cognee", kind="cognee", params={"serial": True})
+    window = SystemConfig(name="window", kind="context_window", params={"token_budget": 1})
+    work = [(cognee, question(f"c{i}"), 11) for i in range(6)] + [(window, question(f"w{i}"), 11) for i in range(6)]
+    out = tmp_path / "runs.jsonl"
+    run_mod._run_units(work, None, None, J(), {}, out, workers=4)
+    assert active["max_serial"] == 1
+    assert len(out.read_text().splitlines()) == 12

@@ -61,7 +61,7 @@ def session(i=0):
 def make(tmp_path):
     made: list[FakeGraphiti] = []
 
-    def factory():
+    def factory(namespace):
         g = FakeGraphiti()
         made.append(g)
         return g
