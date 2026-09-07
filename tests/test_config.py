@@ -6,8 +6,8 @@ def test_load_models_returns_typed_config():
     assert cfg.provider == "openai_compat"
     assert cfg.base_url == "https://openrouter.ai/api/v1"
     assert cfg.api_key_env == "OPENROUTER_API_KEY"
-    assert cfg.answer_model == "nvidia/nemotron-3.5-lightning:free"
-    assert cfg.openai_compat_model == "nvidia/nemotron-3.5-lightning:free"
+    assert cfg.answer_model == "inclusionai/ling-3.0-flash-fin:free"
+    assert cfg.openai_compat_model == "inclusionai/ling-3.0-flash-fin:free"
     assert cfg.num_ctx == 40960
     assert cfg.temperature == 0.0
     assert cfg.seeds == (11, 22, 33)

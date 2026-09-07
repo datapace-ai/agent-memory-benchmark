@@ -1,10 +1,10 @@
-# OpenRouter, free Nemotron 3.5 Lightning. Zero cost; rate-limited per minute and per day.
+# OpenRouter free models. Zero cost; shared upstream pools rate-limit under load.
 provider: openai_compat
 base_url: https://openrouter.ai/api/v1
 api_key_env: OPENROUTER_API_KEY
-answer_model: nvidia/nemotron-3.5-lightning:free
-judge_model: nvidia/nemotron-3.5-lightning:free
-openai_compat_model: nvidia/nemotron-3.5-lightning:free
+answer_model: inclusionai/ling-3.0-flash-fin:free
+judge_model: inclusionai/ling-3.0-flash-fin:free
+openai_compat_model: inclusionai/ling-3.0-flash-fin:free
 # Local CPU embeddings for the products; the API has no free embedding model.
 embed_model: BAAI/bge-small-en-v1.5
 embed_dims: 384

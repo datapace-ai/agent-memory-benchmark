@@ -1,10 +1,18 @@
 # Model tracks: the same questions and the same judge, a different answerer
 # (and the same model inside each product). One results file per track.
-# Gemma first: its free endpoint answers in under a second; Nemotron's takes
-# about 30 seconds and rate-limits under concurrency.
-judge_model: google/gemma-4-31b-it:free
+#
+# Probe of 13 free OpenRouter models on 2026-09-07 (7 calls each: 2 small,
+# one 4k-token prompt, one tool call, 3 in parallel):
+#   ling-3.0-flash-fin / -sante     7/7  0.7s  tools yes
+#   cohere/north-mini-code          7/7  0.8s  tools yes
+#   nemotron-3-super-120b-a12b      6/7  0.5s  tools yes  (one 429 in the burst)
+#   nemotron-3.5-lightning          7/7  71s   tools yes  (too slow)
+#   gemma-4-31b / 26b               0/7  upstream pool saturated (429)
+judge_model: inclusionai/ling-3.0-flash-fin:free
 tracks:
-  - name: gemma-4-31b
-    answer_model: google/gemma-4-31b-it:free
-  - name: nemotron-3.5-lightning
-    answer_model: nvidia/nemotron-3.5-lightning:free
+  - name: ling-3.0-flash-fin
+    answer_model: inclusionai/ling-3.0-flash-fin:free
+  - name: nemotron-3-super-120b
+    answer_model: nvidia/nemotron-3-super-120b-a12b:free
+  - name: cohere-north-mini-code
+    answer_model: cohere/north-mini-code:free
