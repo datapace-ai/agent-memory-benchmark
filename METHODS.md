@@ -45,8 +45,23 @@ Mem0's partial-credit rule, taken verbatim from `verify.py` in
 and Mem0's `_JUDGE_TEMPLATE`. The judge never sees which system produced an
 answer. Where the ranking changes between rules, the summary says so.
 
-Judge agreement with human labels on the smoke sample: TO BE RECORDED after the
-first smoke run.
+Judge agreement with human labels on the smoke sample (2026-09-07, 10 judged
+answers, 5 questions, oracle and window, seed 11): 10 of 10 under the LongMemEval
+rule. The two disagreements between rules were both the Mem0 partial-credit rule
+accepting "at least five" against a gold of 4, which is that rule's written
+"how many" clause behaving as published, not a grading error. The 50-answer
+sample the design calls for is completed on the first full run.
+
+## Measured cost on an Apple M5, 24 GB, qwen3:14b, reasoning off
+
+| Condition | Prompt tokens | Seconds per unit (answer plus four judge calls) |
+| --- | ---: | ---: |
+| oracle (evidence sessions only) | 800 to 12,500 | 7 to 73, median about 30 |
+| window (last 32k tokens) | 20,700 to 28,700 | 143 to 245, median about 200 |
+
+Prefill runs at roughly 130 tokens per second on this machine, so the window
+condition is bounded by prompt length. One full pass of 100 questions over both
+conditions is about 6.5 hours per seed.
 
 ## Limits
 
