@@ -24,6 +24,30 @@ the committed question set irreproducible. The selected set is committed as
 
 ## Model
 
+Release one runs on OpenRouter's free models rather than a local model, so no
+laptop is loaded and the model is one readers can name. Provider and model
+tags, the judge, and the embedding model are recorded in every run record.
+
+- Answerers, as tracks: `nvidia/nemotron-3.5-lightning:free` (30B mixture of
+  experts, 3B active) and `google/gemma-4-31b-it:free` (31B dense). The track's
+  answerer is also the model inside each product.
+- Judge: `google/gemma-4-31b-it:free` for every system and every track, so a
+  difference between tracks is the answerer, not the grader.
+- Reasoning off on every call through OpenRouter's `reasoning` parameter, and
+  any residual think block is stripped before grading.
+- Requests are paced at one every three seconds and retried on rate limits with
+  the provider's Retry-After, because free variants are capped per minute and
+  per day. Latency figures on a shared free tier are therefore noisier than on
+  a dedicated endpoint; token counts are unaffected.
+- Embeddings for the products run on the CPU with `BAAI/bge-small-en-v1.5`
+  (384 dimensions), because no free API serves embeddings.
+
+The original local track (Ollama, qwen3:14b, reasoning off) is kept in
+`configs/models.ollama.yaml` for anyone who wants to reproduce on their own
+machine; its measured cost per unit is below.
+
+### Local track, kept for reference
+
 One local model through Ollama answers, judges, and would drive any framework's
 internal extraction, so no system gets a stronger model than another.
 Temperature 0, explicit seed on every call. Token counts come from Ollama's
