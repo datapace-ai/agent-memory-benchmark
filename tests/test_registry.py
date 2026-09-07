@@ -5,6 +5,7 @@ from membench.config import REPO_ROOT, ModelConfig, SystemConfig
 from membench.llm import LLMClient
 from membench.systems.cognee_system import CogneeSystem
 from membench.systems.file_search import FileSearchSystem
+from membench.systems.graphiti_system import GraphitiSystem
 from membench.systems.context_window import ContextWindowSystem
 from membench.systems.langmem_system import LangMemSystem
 from membench.systems.mem0_system import Mem0System
@@ -36,6 +37,9 @@ def test_build_each_kind():
     )
     assert isinstance(
         build(SystemConfig("cognee", "cognee", {"top_k": 10}), llm(), 11, CFG), CogneeSystem
+    )
+    assert isinstance(
+        build(SystemConfig("graphiti", "graphiti", {"top_k": 10}), llm(), 11, CFG), GraphitiSystem
     )
 
 

@@ -13,7 +13,7 @@ def test_load_models_returns_typed_config():
 
 def test_load_systems_lists_phase_two_systems():
     systems = load_systems(REPO_ROOT / "configs" / "systems.yaml")
-    assert [s.name for s in systems] == ["oracle", "window", "file", "mem0", "langmem", "cognee"]
+    assert [s.name for s in systems] == ["oracle", "window", "file", "mem0", "langmem", "cognee", "graphiti"]
     assert [s.kind for s in systems[:2]] == ["context_window", "context_window"]
     assert systems[0].params["evidence_only"] is True
     assert systems[1].params["token_budget"] == 32000

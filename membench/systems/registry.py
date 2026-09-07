@@ -8,7 +8,7 @@ from membench.systems.base import MemorySystem
 from membench.systems.context_window import ContextWindowSystem
 
 STORE_ROOT = REPO_ROOT / "data" / "vendor-stores"
-VENDOR_KINDS = ("mem0", "langmem", "cognee")
+VENDOR_KINDS = ("mem0", "langmem", "cognee", "graphiti")
 
 
 def build(
@@ -38,6 +38,10 @@ def build(
             from membench.systems.langmem_system import LangMemSystem
 
             return LangMemSystem(cfg.name, llm, models, seed, top_k=top_k)
+        if cfg.kind == "graphiti":
+            from membench.systems.graphiti_system import GraphitiSystem
+
+            return GraphitiSystem(cfg.name, llm, models, seed, store_dir, top_k=top_k)
         from membench.systems.cognee_system import CogneeSystem
 
         return CogneeSystem(cfg.name, llm, models, seed, store_dir, top_k=top_k)

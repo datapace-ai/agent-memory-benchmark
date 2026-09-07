@@ -25,3 +25,7 @@ systems:
     kind: cognee
     params:
       top_k: 10
+  - name: graphiti
+    kind: graphiti
+    params:
+      top_k: 10
