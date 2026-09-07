@@ -8,6 +8,7 @@ def test_load_models_returns_typed_config():
     assert cfg.num_ctx == 40960
     assert cfg.temperature == 0.0
     assert cfg.seeds == (11, 22, 33)
+    assert cfg.openai_compat_model == "qwen3-nothink:14b"
 
 
 def test_load_systems_lists_phase_two_systems():

@@ -28,7 +28,7 @@ from membench.systems.shared import EMBEDDING_DIMS, answer_from_context, session
 def cognee_environment(cfg: ModelConfig, seed: int, store_dir: Path) -> dict[str, str]:
     return {
         "LLM_PROVIDER": "ollama",
-        "LLM_MODEL": cfg.answer_model,
+        "LLM_MODEL": cfg.openai_compat_model,
         "LLM_ENDPOINT": f"{cfg.base_url}/v1",
         "LLM_API_KEY": "ollama",
         "LLM_TEMPERATURE": str(cfg.temperature),

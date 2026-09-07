@@ -7,3 +7,4 @@ temperature: 0.0
 max_answer_tokens: 512
 seeds: [11, 22, 33]
 think: false
+openai_compat_model: qwen3-nothink:14b

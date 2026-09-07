@@ -12,7 +12,7 @@ from membench.systems.cognee_system import CogneeSystem, cognee_environment, for
 CFG = ModelConfig(
     base_url="http://ollama.test", answer_model="qwen3:14b", judge_model="qwen3:14b",
     embed_model="nomic-embed-text", num_ctx=40960, temperature=0.0, max_answer_tokens=512,
-    seeds=(11,), think=False,
+    seeds=(11,), think=False, openai_compat_model="qwen3-nothink:14b",
 )
 
 
@@ -85,7 +85,7 @@ def make(tmp_path):
 def test_environment_points_cognee_at_ollama_with_reasoning_off(tmp_path):
     env = cognee_environment(CFG, seed=11, store_dir=tmp_path)
     assert env["LLM_PROVIDER"] == "ollama"
-    assert env["LLM_MODEL"] == "qwen3:14b"
+    assert env["LLM_MODEL"] == "qwen3-nothink:14b"
     assert env["LLM_ENDPOINT"] == "http://ollama.test/v1"
     assert env["EMBEDDING_PROVIDER"] == "ollama"
     assert env["EMBEDDING_MODEL"] == "nomic-embed-text"

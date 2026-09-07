@@ -21,6 +21,7 @@ class ModelConfig:
     max_answer_tokens: int
     seeds: tuple[int, ...]
     think: bool | None = None
+    openai_compat_model: str = "qwen3-nothink:14b"
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ def load_models(path: Path) -> ModelConfig:
         max_answer_tokens=int(raw["max_answer_tokens"]),
         seeds=tuple(int(s) for s in raw["seeds"]),
         think=raw.get("think"),
+        openai_compat_model=raw.get("openai_compat_model", "qwen3-nothink:14b"),
     )
 
 
