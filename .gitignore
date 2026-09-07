@@ -5,3 +5,6 @@ data/raw/
 results/runs/*.tmp
 .pytest_cache/
 results/runs/*.lock
+.venv-vendors/
+results/vendor-smoke/
+data/vendor-stores/
