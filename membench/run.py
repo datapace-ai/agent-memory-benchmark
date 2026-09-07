@@ -82,6 +82,20 @@ def release_lock(lock: Path) -> None:
         pass
 
 
+def apply_model_overrides(models: ModelConfig, answer_model: str, judge_model: str) -> ModelConfig:
+    """A model track: same questions, same judge, a different answerer.
+
+    The override also applies to the products' internal model, so a track is
+    one model for everything except the judge."""
+    from dataclasses import replace
+
+    if answer_model:
+        models = replace(models, answer_model=answer_model, openai_compat_model=answer_model)
+    if judge_model:
+        models = replace(models, judge_model=judge_model)
+    return models
+
+
 def plan_work(
     systems: tuple[SystemConfig, ...],
     questions: list[Question],
@@ -104,9 +118,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit", type=int, default=0, help="0 means every question")
     parser.add_argument("--systems", default="", help="comma separated subset of system names")
     parser.add_argument("--seeds", default="", help="comma separated subset of seeds")
+    parser.add_argument("--models-config", type=Path, default=REPO_ROOT / "configs" / "models.yaml")
+    parser.add_argument("--answer-model", default="", help="override the answerer for this run (a model track)")
+    parser.add_argument("--judge-model", default="", help="override the judge; keep one judge across tracks")
     args = parser.parse_args(argv)
 
-    models = load_models(REPO_ROOT / "configs" / "models.yaml")
+    models = apply_model_overrides(load_models(args.models_config), args.answer_model, args.judge_model)
     systems = load_systems(REPO_ROOT / "configs" / "systems.yaml")
     if args.systems:
         wanted = set(args.systems.split(","))
@@ -132,8 +149,11 @@ def main(argv: list[str] | None = None) -> int:
     llm = LLMClient(models)
     judge = Judge(llm)
     provenance = {
+        "provider": models.provider,
+        "base_url": models.base_url,
         "answer_model": models.answer_model,
         "judge_model": models.judge_model,
+        "embed_model": models.embed_model,
         "num_ctx": models.num_ctx,
         "ollama_version": llm.version(),
         "python": platform.python_version(),

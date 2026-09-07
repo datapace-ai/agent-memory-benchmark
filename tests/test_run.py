@@ -6,7 +6,16 @@ import os
 
 import pytest
 
-from membench.run import acquire_lock, append_record, load_done, plan_work, record_key, release_lock
+from membench.config import ModelConfig
+from membench.run import (
+    acquire_lock,
+    append_record,
+    apply_model_overrides,
+    load_done,
+    plan_work,
+    record_key,
+    release_lock,
+)
 
 
 def question(qid):
@@ -91,3 +100,17 @@ def test_acquire_lock_replaces_a_stale_lock(tmp_path):
     lock = acquire_lock(out)
     assert lock.read_text() == str(os.getpid())
     release_lock(lock)
+
+
+def test_apply_model_overrides_changes_answerer_and_product_model_but_not_judge_unless_asked():
+    base = ModelConfig(
+        base_url="https://router.test/api/v1", answer_model="a", judge_model="j", embed_model="e",
+        num_ctx=1, temperature=0.0, max_answer_tokens=1, seeds=(1,), openai_compat_model="a",
+        provider="openai_compat", api_key_env=None,
+    )
+    track = apply_model_overrides(base, "vendor/other:free", "")
+    assert track.answer_model == "vendor/other:free"
+    assert track.openai_compat_model == "vendor/other:free"
+    assert track.judge_model == "j"
+    assert apply_model_overrides(base, "", "").answer_model == "a"
+    assert apply_model_overrides(base, "", "judge2").judge_model == "judge2"
