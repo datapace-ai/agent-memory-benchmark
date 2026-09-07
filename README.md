@@ -22,9 +22,13 @@ has changed.
 | --- | --- |
 | `oracle` | A ceiling, not a competitor. Sees only the evidence sessions. |
 | `window` | No product. Keeps the most recent 32k tokens of history. |
+| `mem0` | Mem0 open source: extracted memories in a local Qdrant store. |
+| `langmem` | LangMem: a LangGraph memory store managed by its background extractor. |
+| `cognee` | Cognee: a knowledge graph plus vector index built from the sessions. |
 
-Mem0, Graphiti (Zep's engine), Letta, LangMem, Cognee, and a file-search
-baseline arrive in phase 2.
+Graphiti (Zep's engine), Letta, and a file-search baseline arrive in phase 3.
+Product adapters live in a second environment until the phase 1 run finishes:
+`UV_PROJECT_ENVIRONMENT=.venv-vendors uv sync --extra dev --extra vendors`.
 
 ## Reproduce
 

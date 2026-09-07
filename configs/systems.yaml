@@ -9,3 +9,15 @@ systems:
     params:
       evidence_only: false
       token_budget: 32000
+  - name: mem0
+    kind: mem0
+    params:
+      top_k: 10
+  - name: langmem
+    kind: langmem
+    params:
+      top_k: 10
+  - name: cognee
+    kind: cognee
+    params:
+      top_k: 10

@@ -2,6 +2,7 @@ import json
 import time
 
 import httpx
+import pytest
 
 from membench.config import ModelConfig
 from membench.data.types import Session, Turn
@@ -86,6 +87,7 @@ def test_answer_from_context_uses_the_shared_prompt_and_counts():
 
 
 def test_chat_model_has_reasoning_off_and_the_benchmark_settings():
+    pytest.importorskip("langchain_ollama")
     model = chat_model(CFG, seed=22)
     assert model.model == "qwen3:14b"
     assert model.reasoning is False
@@ -96,6 +98,7 @@ def test_chat_model_has_reasoning_off_and_the_benchmark_settings():
 
 
 def test_embeddings_use_the_configured_model():
+    pytest.importorskip("langchain_ollama")
     emb = embeddings(CFG)
     assert emb.model == "nomic-embed-text"
     assert emb.base_url == "http://ollama.test"

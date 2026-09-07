@@ -36,6 +36,30 @@ without changing the answer. It is disabled identically for every system, so
 the benchmark measures retrieval rather than reasoning, and the token metric
 compares memory footprints rather than reasoning verbosity.
 
+## Products under test
+
+Each product ingests a session as chat messages with the session date on the
+first turn, because none of the open-source engines accept a timestamp at
+ingestion. Retrieval returns the product's own context; the benchmark's client
+then answers with the shared prompt, so the answer step and its token counts
+are identical across systems. A product's internal extraction tokens are not
+observable from outside; ingestion is reported as seconds per session and
+store size.
+
+| Product | Version | Ingest call | Retrieval call | How reasoning is turned off |
+| --- | --- | --- | --- | --- |
+| Mem0 open source | mem0ai 2.0.20 | `Memory.add(messages, user_id)` per session | `Memory.search(query, filters={user_id}, top_k)` | LangChain `ChatOllama(reasoning=False)` through Mem0's `langchain` provider |
+| LangMem | langmem 0.0.30 | `MemoryStoreManager.invoke({messages})` per session | `MemoryStoreManager.search(query)` | `ChatOllama(reasoning=False)` |
+| Cognee | cognee 1.5.4 | `cognee.add(text, dataset)` then `cognee.cognify([dataset])` per session | `cognee.search(GRAPH_COMPLETION, only_context=True)` | `LLM_ARGS={"think": false}` in Cognee's environment; verified on the vendor smoke by comparing ingestion time against the other products |
+
+Reset semantics: Mem0 deletes the namespace's memories; LangMem builds a fresh
+in-memory store; Cognee uses one dataset per namespace and prunes the whole
+system once at the start of a run.
+
+Vendor smoke results (ingestion seconds per session per product, whether
+Cognee's reasoning flag reached Ollama, adapter failures): TO BE RECORDED after
+the first vendor smoke, which waits for the phase 1 full run to finish.
+
 ## Judge
 
 The LongMemEval per-type prompts are used verbatim from `evaluate_qa.py` in

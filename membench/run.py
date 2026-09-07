@@ -14,7 +14,7 @@ import sys
 import time
 from pathlib import Path
 
-from membench.config import REPO_ROOT, SystemConfig, load_models, load_systems
+from membench.config import REPO_ROOT, ModelConfig, SystemConfig, load_models, load_systems
 from membench.data.types import Question, read_jsonl
 from membench.judge.judge import Judge
 from membench.llm import LLMClient
@@ -145,16 +145,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{len(done)} units done, {len(work)} to run", flush=True)
 
     try:
-        _run_units(work, llm, judge, provenance, args.out)
+        _run_units(work, llm, models, judge, provenance, args.out)
     finally:
         release_lock(lock)
     return 0
 
 
-def _run_units(work, llm: LLMClient, judge: Judge, provenance: dict, out: Path) -> None:
+def _run_units(
+    work, llm: LLMClient, models: ModelConfig, judge: Judge, provenance: dict, out: Path
+) -> None:
     for index, (system_cfg, question, seed) in enumerate(work, start=1):
         started = time.perf_counter()
-        system = build(system_cfg, llm, seed=seed)
+        system = build(system_cfg, llm, seed=seed, models=models)
         run = run_question(system, question, seed, evidence_only=evidence_only(system_cfg))
         record = run.to_dict()
 
