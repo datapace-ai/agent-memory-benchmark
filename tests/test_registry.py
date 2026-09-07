@@ -6,6 +6,7 @@ from membench.llm import LLMClient
 from membench.systems.cognee_system import CogneeSystem
 from membench.systems.file_search import FileSearchSystem
 from membench.systems.graphiti_system import GraphitiSystem
+from membench.systems.letta_system import LettaSystem
 from membench.systems.context_window import ContextWindowSystem
 from membench.systems.langmem_system import LangMemSystem
 from membench.systems.mem0_system import Mem0System
@@ -41,6 +42,7 @@ def test_build_each_kind():
     assert isinstance(
         build(SystemConfig("graphiti", "graphiti", {"top_k": 10}), llm(), 11, CFG), GraphitiSystem
     )
+    assert isinstance(build(SystemConfig("letta", "letta", {}), llm(), 11, CFG), LettaSystem)
 
 
 def test_unknown_kind_raises():

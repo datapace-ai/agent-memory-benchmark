@@ -13,12 +13,13 @@ def test_load_models_returns_typed_config():
 
 def test_load_systems_lists_phase_two_systems():
     systems = load_systems(REPO_ROOT / "configs" / "systems.yaml")
-    assert [s.name for s in systems] == ["oracle", "window", "file", "mem0", "langmem", "cognee", "graphiti"]
+    assert [s.name for s in systems] == ["oracle", "window", "file", "mem0", "langmem", "cognee", "graphiti", "letta"]
     assert [s.kind for s in systems[:2]] == ["context_window", "context_window"]
     assert systems[0].params["evidence_only"] is True
     assert systems[1].params["token_budget"] == 32000
     assert systems[2].kind == "file_search"
-    assert all(s.params["top_k"] == 10 for s in systems[3:])
+    assert all(s.params["top_k"] == 10 for s in systems[3:7])
+    assert systems[7].kind == "letta"
 
 
 def test_model_config_is_frozen():

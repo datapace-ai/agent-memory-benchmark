@@ -8,7 +8,7 @@ from membench.systems.base import MemorySystem
 from membench.systems.context_window import ContextWindowSystem
 
 STORE_ROOT = REPO_ROOT / "data" / "vendor-stores"
-VENDOR_KINDS = ("mem0", "langmem", "cognee", "graphiti")
+VENDOR_KINDS = ("mem0", "langmem", "cognee", "graphiti", "letta")
 
 
 def build(
@@ -38,6 +38,13 @@ def build(
             from membench.systems.langmem_system import LangMemSystem
 
             return LangMemSystem(cfg.name, llm, models, seed, top_k=top_k)
+        if cfg.kind == "letta":
+            from membench.systems.letta_system import LettaSystem
+
+            return LettaSystem(
+                cfg.name, llm, models, seed,
+                base_url=str(cfg.params.get("base_url", "http://localhost:8283")),
+            )
         if cfg.kind == "graphiti":
             from membench.systems.graphiti_system import GraphitiSystem
 

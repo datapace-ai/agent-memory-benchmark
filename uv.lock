@@ -2094,6 +2094,23 @@ wheels = [
 ]
 
 [[package]]
+name = "letta-client"
+version = "1.12.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "distro" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8e/55/34a347fb443f5797045cde591c34ee2926650e99f1f0d5f565dcefa99120/letta_client-1.12.1.tar.gz", hash = "sha256:3073adb6cc1ce3b906a40d8ce3b2b77a77ac1887ca2135770590cfe3cef6eba9", size = 396805, upload-time = "2026-06-02T00:31:12.848Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/af/b140a7117b4385b3e1b060df97d9d39703f0c54e156a4d889de8bb8dd48f/letta_client-1.12.1-py3-none-any.whl", hash = "sha256:6f554569a684d57e7f4e4513f8ce6792129b305df37393c650e50776f61baf99", size = 418856, upload-time = "2026-06-02T00:31:14.475Z" },
+]
+
+[[package]]
 name = "limits"
 version = "5.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2332,6 +2349,7 @@ vendors = [
     { name = "langchain-ollama" },
     { name = "langgraph" },
     { name = "langmem" },
+    { name = "letta-client" },
     { name = "mem0ai" },
     { name = "qdrant-client" },
 ]
@@ -2344,6 +2362,7 @@ requires-dist = [
     { name = "langchain-ollama", marker = "extra == 'vendors'", specifier = "==1.1.0" },
     { name = "langgraph", marker = "extra == 'vendors'", specifier = "==1.2.11" },
     { name = "langmem", marker = "extra == 'vendors'", specifier = "==0.0.30" },
+    { name = "letta-client", marker = "extra == 'vendors'", specifier = "==1.12.1" },
     { name = "mem0ai", marker = "extra == 'vendors'", specifier = "==2.0.20" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pyyaml", specifier = ">=6.0" },
