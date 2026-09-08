@@ -134,12 +134,13 @@ def run_async(coro):
     return loop.run_until_complete(coro)
 
 
-def retry_transient(call, *, what: str, attempts: int = 3, base_delay: float = 5.0, sleep=time.sleep):
+def retry_transient(call, *, what: str, attempts: int = 4, base_delay: float = 5.0, sleep=time.sleep):
     """Call again after a failure, with growing delays; raise the last error.
 
     Free API endpoints answer a share of requests with a fast 502 or a bare
-    404, and the products' own clients do not retry all of them. One retry
-    around each ingest or search call costs seconds; a lost unit costs minutes.
+    404, sometimes for minutes at a time, and the products' own clients do not
+    retry all of them. Four attempts wait 5, 15 and 45 s, then 135 s, about
+    three and a half minutes of cover; a lost unit costs more than that.
     """
     last: BaseException | None = None
     for attempt in range(attempts):
