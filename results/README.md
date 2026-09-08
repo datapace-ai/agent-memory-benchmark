@@ -19,7 +19,9 @@ the products spend 20 to 50 times fewer prompt tokens per answer. Switching
 the answering model to Nemotron 3 Super moves the oracle to 60 with no change
 to any memory system. Cognee and Graphiti cannot run under Ling, whose
 endpoint refuses schema-constrained output, and are partial under Nemotron.
-Every system scores 50 on abstention. Ingest, not answer latency, is where the
+Of the two free models, Ling 3.0 Flash was the stronger answerer and the more
+reliable endpoint on every system, but cannot run the graph products. Every
+system scores 50 on abstention. Ingest, not answer latency, is where the
 graph products spend their time: six to eight minutes per question. We report
 these as directions, not verdicts: every 95% interval overlaps every other.
 The durable findings are methodological: name the answering model and print
@@ -347,6 +349,49 @@ rate-limited endpoints rather than about their recall.
   answer in one word, flipped five of twenty verdicts through truncation.
 - The daily cap of 1,000 requests, not the per-minute cap, is the budget.
 
+### 4.8 Which free model did best
+
+The pilot was also a comparison of the free models themselves, on the same
+questions, with the same judge. Ling 3.0 Flash Fin won or tied on every
+system, was the faster endpoint, and never lost a unit to an endpoint error;
+Nemotron 3 Super is the weaker answerer but the only free model that can run
+every product.
+
+| | Ling 3.0 Flash Fin | Nemotron 3 Super 120B |
+| --- | ---: | ---: |
+| Oracle ceiling | 90 | 60 |
+| Window 32k | 80 | 50 |
+| File search | 80 | 70 |
+| Mem0 | 70 | 56 over the 9 finished units |
+| LangMem | 70 | 70 |
+| Mean over the five systems | 78 | 61 |
+| Median latency in the probe, small calls | 0.7 s | 0.5 s |
+| Oracle answer latency, p50 and p95 | 6.5 s, 7.1 s | 7.1 s, 29.4 s |
+| Units lost to endpoint errors during the run | 0 of 50 | 14 of 50 in the first pass, before the retry layers |
+| Calls failing in direct probes | none observed | about 1 in 4, fast 502 or bare 404, often inside a 200 body |
+| Hidden reasoning | none | on by default, off by request flag |
+| Schema-constrained JSON output | refused by the provider | supported |
+| Systems it can carry | oracle, window, file, Mem0, LangMem | all seven |
+
+The oracle row is the cleanest comparison, because no memory system is
+involved: same evidence, same prompt, same judge, thirty points apart. The
+gap narrows under the most lenient rule (Mem0 rule: 90 against 70) but does
+not close.
+
+Three caveats. The judge is Ling, so on its own track it grades its own
+phrasing, and part of the gap may be leniency toward itself rather than
+accuracy; a second judge is the first item in further study. Ten questions
+give intervals that overlap. And the endpoint figures describe the free tier
+on 7 September 2026, not the models: Nemotron's failures were the provider's,
+and a paid or dedicated endpoint would not show them.
+
+Two other candidates did not run. Cohere North Mini Code was configured as a
+third track and stopped by the daily cap. Gemma 4 (31B and 26B) was the first
+choice for a second track, but OpenRouter serves its free tier from a shared
+provider pool that was saturated: every probe call and the first two attempted
+units came back as rate-limited, so it was set aside; it also does not offer
+schema-constrained output, so like Ling it could not carry Cognee or Graphiti.
+
 ## 5. Discussion
 
 On this sample the products do not recall better than the context window;
@@ -361,6 +406,11 @@ Abstention is the one ability where every system fails equally. A memory
 layer changes what the answerer sees, not its willingness to say it does not
 know; the shared prompt asks for an exact refusal sentence, and the systems
 produced it only half the time when it was correct to do so.
+
+Among free models, the choice is a trade: Ling answers better and more
+reliably, Nemotron is the one that can host every product. A track that
+carries all seven systems under Ling is not possible until its provider
+supports schema-constrained output.
 
 The graph products' cost lands at ingest, and it is the cost that decides
 whether they can be run at all on a given budget: they need about a hundred

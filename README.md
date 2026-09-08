@@ -15,7 +15,9 @@ The pilot run of 7 September 2026, ten questions and one seed on free models,
 is written up with charts in [results/README.md](results/README.md). The short
 version: memory products answer with 20 to 50 times fewer tokens than the
 baselines and land one question lower; the answering model moves the ceiling
-more than any memory system does; nobody beat file search.
+more than any memory system does; nobody beat file search. Of the free
+models, Ling 3.0 Flash did best on every system but cannot run Cognee or
+Graphiti, which need Nemotron 3 Super.
 
 ![Accuracy against prompt tokens per answer](results/charts/accuracy-vs-tokens.svg)
 
