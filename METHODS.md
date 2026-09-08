@@ -211,3 +211,19 @@ Written after each full run. Findings while building are kept here too.
   as "role: text" lines, the session date as the reference time. This is a
   departure from Zep's own evaluation setup and is stated on every Graphiti
   row.
+- 2026-09-07, upstream errors inside 200 responses. On the free Nemotron
+  endpoint about one call in four fails fast with a provider 502 or a bare
+  404, and OpenRouter reports many of these inside an HTTP 200 body. The
+  OpenAI client parses that body as a completion with no choices and does
+  not retry; litellm raises a non-retryable error for the 404. Three layers
+  now absorb this: the harness's own client retries any non-200 or error
+  body; Graphiti's wrapped client retries an error body up to four times per
+  call; and every product's ingest and search call is retried up to three
+  times at the session level (5, 15 and 45 s). Cognee's built-in limiter is
+  set to 15 requests per minute so its internal calls stay under the account
+  cap of 20. Retries cost seconds; a lost unit costs minutes, and any unit
+  that still fails is recorded as an error and redone with `--retry-errors`.
+- 2026-09-07, event loops inside products. Cognee and Graphiti keep asyncio
+  locks and clients bound to the loop that created them, so an adapter that
+  calls `asyncio.run` per operation fails on its second call. Each worker
+  thread now owns one persistent loop for the whole unit.
