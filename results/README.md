@@ -133,7 +133,62 @@ prompt and a tool call). The pilot ran two tracks:
 Track A cannot carry Cognee or Graphiti because both request JSON through the
 `response_format` field and Ling's provider rejects any such request.
 
-### 3.5 Judging
+### 3.5 Which model did what
+
+Every number in this document was produced by one of four models. This
+section names them and states, for each track and each system, which model
+performed which step.
+
+**Roster.**
+
+| Model | Maker and shape | Context | Served through | Used as |
+| --- | --- | ---: | --- | --- |
+| Ling 3.0 Flash Fin (`inclusionai/ling-3.0-flash-fin:free`) | InclusionAI, mixture of experts, 124B total, 5.1B active | 262k | OpenRouter free tier (provider Novita) | answerer on track A; judge for every rule on both tracks; the model inside Mem0, LangMem and file search on track A |
+| Nemotron 3 Super (`nvidia/nemotron-3-super-120b-a12b:free`) | NVIDIA, hybrid Mamba-Transformer mixture of experts, 120B total, 12B active, reasoning switched off by request flag | 262k | OpenRouter free tier (provider NVIDIA) | answerer on track B; the model inside all five products on track B; never a judge |
+| bge-small-en-v1.5 (`BAAI/bge-small-en-v1.5`) | BAAI, 33M-parameter embedding model, 384 dimensions | | local CPU | embeddings for every product on both tracks |
+| bge-reranker-v2-m3 (`BAAI/bge-reranker-v2-m3`) | BAAI, cross-encoder reranker | | local CPU | Graphiti's reranker at retrieval |
+
+Cohere North Mini Code (`cohere/north-mini-code:free`, 30B total, 3B active)
+was probed and configured as a third track but not run within the pilot's
+budget. Models probed and not used: Gemma 4 31B and 26B (provider pool
+saturated, every call refused), Nemotron 3.5 Lightning (71 s median per call),
+Nemotron 3 Ultra 550B (42 s), Inkling and Inkling Small (requests refused),
+LFM 2.5 2.6B (requests rejected), Nemotron 3 Nano Omni (a reasoning model)
+and Nemotron 3.5 Content Safety (no tool calling).
+
+**Roles by track.**
+
+| Step | Track A | Track B |
+| --- | --- | --- |
+| Deciding tool calls in file search (`list_files`, `read_file`, `grep`, at most 8) | Ling 3.0 Flash | Nemotron 3 Super |
+| Extraction and update decisions inside Mem0 and LangMem at ingest | Ling 3.0 Flash | Nemotron 3 Super |
+| Entity, edge and summary extraction inside Cognee and Graphiti at ingest | not runnable | Nemotron 3 Super |
+| Embedding stored items and queries in every product | bge-small-en-v1.5 | bge-small-en-v1.5 |
+| Reranking retrieved edges in Graphiti | not runnable | bge-reranker-v2-m3 |
+| Writing the final answer from the retrieved context, one shared prompt | Ling 3.0 Flash | Nemotron 3 Super |
+| Grading under the LongMemEval, Zep and Mem0 rules, and the stale-answer check | Ling 3.0 Flash | Ling 3.0 Flash |
+
+**Per system.** The answerer and the judge are the track's, as above; this
+table lists what happens before the answer call.
+
+| System | Model work at ingest | Embeddings | Reranker | Store | Model work at retrieval |
+| --- | --- | --- | --- | --- | --- |
+| Oracle | none; evidence sessions are placed in the prompt | none | none | none | none |
+| Window 32k | none; the last 32k tokens are placed in the prompt | none | none | none | none |
+| File search | none; sessions are written as dated text files | none | none | folder of files | the track model chooses up to 8 tool calls, then answers |
+| Mem0 | the track model extracts memories and decides add, update or delete, through Mem0's LangChain provider | bge-small (LangChain HuggingFace) | none | local Qdrant, one collection per unit | vector search, top 10 |
+| LangMem | the track model extracts and consolidates memories through LangChain | bge-small (LangChain HuggingFace) | none | LangGraph in-memory store, fresh per unit | vector search, top 10 |
+| Cognee | the track model classifies, extracts a graph and writes summaries per chunk, through litellm with schema-constrained output | bge-small (fastembed) | none | sqlite, kuzu graph, lancedb vectors, one dataset per unit | graph completion context, top 10 |
+| Graphiti | the track model extracts entities and edges per episode, resolves duplicates and writes node summaries, with schema-constrained output | bge-small (sentence-transformers) | bge-reranker-v2-m3 | embedded FalkorDB, one graph per unit | hybrid edge search, top 10, reranked |
+| Letta | not run | | | | |
+
+Two consequences follow. First, a product's score on a track is the product
+plus the track model's skill at extraction; Mem0 on track B is Mem0 with
+Nemotron inside, not Mem0 in general. Second, the judge on track A is the
+answerer on track A, so any leniency the judge has toward its own phrasing
+applies to every system on that track equally, and to none on track B.
+
+### 3.6 Judging
 
 One judge, `inclusionai/ling-3.0-flash-fin:free`, grades every answer on every
 track, so differences between tracks come from the answerer. Each answer is
@@ -147,7 +202,7 @@ the judge grades its own answers, a known leniency risk that applies equally
 to every system within the track. A blind hand check of 12 judged answers
 after the pilot agreed with the judge 12 times out of 12.
 
-### 3.6 Metrics and statistics
+### 3.7 Metrics and statistics
 
 Accuracy is the share of questions judged correct under a rule. Intervals are
 95% bootstrap intervals over questions (2,000 resamples, fixed seed). Prompt
@@ -165,7 +220,7 @@ Units that fail for reasons outside the system (an endpoint error after all
 retries) are recorded with the error and counted as wrong in the track
 summary until they are rerun; the tables below say where that applies.
 
-### 3.7 Cost accounting and budget
+### 3.8 Cost accounting and budget
 
 Every run on both tracks cost 0 dollars. OpenRouter's free tier limits the
 account to 20 requests per minute and to 1,000 requests per day across all
@@ -175,7 +230,7 @@ go through their libraries' clients and are additionally retried at the
 session level. The whole pilot, including model probes, a full re-judge and
 the partial track B, consumed one day's 1,000 requests.
 
-### 3.8 Reproducibility
+### 3.9 Reproducibility
 
 Every run record carries the answerer, judge, embedding model, seed, package
 versions and, after a re-judge, the judge that produced the verdicts. Runs are

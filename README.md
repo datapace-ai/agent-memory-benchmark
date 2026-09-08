@@ -83,6 +83,9 @@ the tracks; `scripts/run_tracks.sh` runs them one after another into
 one model for every track, so accuracy differences between tracks come from
 the answerer, not the grader.
 
+`results/README.md`, section 3.5, states for each track and each system which
+model extracted, embedded, reranked, answered and judged.
+
 ## Cost
 
 Zero dollars. OpenRouter's free tier allows 20 requests per minute and 1,000
