@@ -227,3 +227,17 @@ Written after each full run. Findings while building are kept here too.
   locks and clients bound to the loop that created them, so an adapter that
   calls `asyncio.run` per operation fails on its second call. Each worker
   thread now owns one persistent loop for the whole unit.
+- 2026-09-07, the daily cap is the real budget. OpenRouter's free tier
+  caps an account at 1000 requests per day across all free models
+  (`free-models-per-day-high-balance`, reset at 00:00 UTC), on top of the 20
+  per minute. One day bought: the five-system Ling track on ten questions,
+  its re-judge, the model probes, and most of a seven-system Nemotron track
+  (every baseline, nine Mem0 units, four Cognee units, one Graphiti unit).
+  Cognee and Graphiti spend on the order of 50 to 100 internal calls per
+  question, so on this tier the product tracks advance by about ten
+  questions a day and the 100-question run is a multi-week affair or a paid
+  one. Runs are resumable and error units are redone with `--retry-errors`,
+  so a cap hit costs nothing but time; the harness treats an HTTP 429 with
+  `limit_source: openrouter_free_tier_daily` like any other failure, which
+  wastes about five minutes of retries per unit. A run that meets the daily
+  cap should stop instead.
