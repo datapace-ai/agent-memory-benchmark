@@ -63,22 +63,30 @@ def format_edges(edges: list) -> str:
     return "\n".join(lines) if lines else "(no facts retrieved)"
 
 
-class LocalEmbedder:
-    """Graphiti EmbedderClient over a sentence-transformers model on the CPU."""
+def local_embedder(model_name: str, dims: int):
+    """Graphiti EmbedderClient over a sentence-transformers model on the CPU.
 
-    def __init__(self, model_name: str, dims: int) -> None:
-        from sentence_transformers import SentenceTransformer
+    Graphiti validates the embedder with an isinstance check against its
+    abstract base, so the class is built here, after the import.
+    """
+    from graphiti_core.embedder.client import EmbedderClient
+    from sentence_transformers import SentenceTransformer
 
-        self._model = SentenceTransformer(model_name, device="cpu")
-        self._dims = dims
+    class LocalEmbedder(EmbedderClient):
+        def __init__(self) -> None:
+            self._model = SentenceTransformer(model_name, device="cpu")
+            self._dims = dims
 
-    async def create(self, input_data):
-        vec = self._model.encode(input_data if isinstance(input_data, str) else " ".join(map(str, input_data)), normalize_embeddings=True)
-        return [float(x) for x in vec[: self._dims]]
+        async def create(self, input_data):
+            text = input_data if isinstance(input_data, str) else " ".join(map(str, input_data))
+            vec = self._model.encode(text, normalize_embeddings=True)
+            return [float(x) for x in vec[: self._dims]]
 
-    async def create_batch(self, input_data_list):
-        vecs = self._model.encode(list(input_data_list), normalize_embeddings=True)
-        return [[float(x) for x in v[: self._dims]] for v in vecs]
+        async def create_batch(self, input_data_list):
+            vecs = self._model.encode(list(input_data_list), normalize_embeddings=True)
+            return [[float(x) for x in v[: self._dims]] for v in vecs]
+
+    return LocalEmbedder()
 
 
 REASONING_OFF = {"reasoning": {"enabled": False}}
@@ -134,7 +142,7 @@ def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[str
                 ),
                 client=reasoning_off_client(key, cfg.base_url),
             )
-            embedder = LocalEmbedder(cfg.embed_model, cfg.embed_dims)
+            embedder = local_embedder(cfg.embed_model, cfg.embed_dims)
         else:
             llm_client = OpenAIGenericClient(
                 LLMConfig(api_key="ollama", model=model, small_model=model, base_url=f"{cfg.base_url}/v1")
