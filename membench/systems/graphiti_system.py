@@ -1,11 +1,16 @@
 """Graphiti, Zep's open-source engine, as a memory system.
 
-Each turn becomes an episode with the session date as a timezone-aware
-reference time, in a group named after the namespace. Retrieval is
-Graphiti's hybrid edge search over that group; the edge facts are the
-context. Reset opens a fresh embedded FalkorDB, which is the cheapest empty
-graph. The engine's model is the no-think variant through Ollama's
-OpenAI-compatible endpoint, and reranking is the local BGE cross-encoder.
+Each session becomes one episode (its turns as "role: text" lines) with
+the session date as a timezone-aware reference time, in a group named after
+the namespace. One episode per session is the same ingest unit the other
+adapters use; the reference adapters add one episode per message, which
+multiplies the engine's internal LLM calls by about ten and does not fit a
+20 requests per minute budget. Retrieval is Graphiti's hybrid edge search
+over that group; the edge facts are the context. Reset opens a fresh embedded
+FalkorDB, which is the cheapest empty graph. On an OpenAI-compatible API the
+engine's client sends OpenRouter's reasoning-off flag on every call, so a
+hybrid reasoning model does not spend hidden tokens on extraction; reranking
+is the local BGE cross-encoder.
 
 References: getzep/zep-papers locomo_eval; RudrenduPaul/memtrust
 zep_graphiti_selfhosted_adapter (timezone-aware reference_time, search returns
@@ -76,6 +81,34 @@ class LocalEmbedder:
         return [[float(x) for x in v[: self._dims]] for v in vecs]
 
 
+REASONING_OFF = {"reasoning": {"enabled": False}}
+
+
+def reasoning_off_client(api_key_value: str, base_url: str, http_client=None):
+    """AsyncOpenAI client whose chat completions carry OpenRouter's reasoning-off flag.
+
+    Graphiti's generic client has no hook for extra request fields, so the
+    completions method is wrapped on this one instance.
+    """
+    from openai import AsyncOpenAI
+
+    client = AsyncOpenAI(api_key=api_key_value, base_url=base_url, http_client=http_client)
+    original = client.chat.completions.create
+
+    async def create(*args, **kwargs):
+        extra = dict(kwargs.get("extra_body") or {})
+        extra.update(REASONING_OFF)
+        kwargs["extra_body"] = extra
+        return await original(*args, **kwargs)
+
+    client.chat.completions.create = create  # type: ignore[method-assign]
+    return client
+
+
+def session_episode_body(session: Session) -> str:
+    return "\n".join(f"{t.role}: {t.content}" for t in session.turns)
+
+
 def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[str], object]:
     def factory(namespace: str):
         from graphiti_core import Graphiti
@@ -93,8 +126,13 @@ def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[str
         db = FalkorDB(str(path / "falkordb.db"))
         model = cfg.openai_compat_model
         if cfg.provider == "openai_compat":
+            key = api_key(cfg) or "none"
             llm_client = OpenAIGenericClient(
-                LLMConfig(api_key=api_key(cfg) or "none", model=model, small_model=model, base_url=cfg.base_url)
+                LLMConfig(
+                    api_key=key, model=model, small_model=model, base_url=cfg.base_url,
+                    temperature=cfg.temperature,
+                ),
+                client=reasoning_off_client(key, cfg.base_url),
             )
             embedder = LocalEmbedder(cfg.embed_model, cfg.embed_dims)
         else:
@@ -161,19 +199,18 @@ class GraphitiSystem(MemorySystem):
         graphiti, group = self._require()
         started = time.perf_counter()
         when = parse_session_date(session.date)
-        for i, turn in enumerate(session.turns):
-            body = f"{turn.role}: {turn.content}"
-            _run(
-                graphiti.add_episode(
-                    name=f"{session.session_id}-{i}",
-                    episode_body=body,
-                    source_description="chat message",
-                    reference_time=when,
-                    group_id=group,
-                )
+        body = session_episode_body(session)
+        _run(
+            graphiti.add_episode(
+                name=session.session_id,
+                episode_body=body,
+                source_description="chat session",
+                reference_time=when,
+                group_id=group,
             )
-            self._episodes += 1
-            self._chars += len(body)
+        )
+        self._episodes += 1
+        self._chars += len(body)
         return IngestStats(
             seconds=time.perf_counter() - started,
             store_items=self._episodes,

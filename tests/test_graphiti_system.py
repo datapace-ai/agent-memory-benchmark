@@ -7,7 +7,7 @@ from membench.config import ModelConfig
 from membench.data.types import Session, Turn
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.graphiti_system import GraphitiSystem, format_edges, parse_session_date
+from membench.systems.graphiti_system import GraphitiSystem, format_edges, parse_session_date, reasoning_off_client
 
 CFG = ModelConfig(
     base_url="http://ollama.test", answer_model="qwen3:14b", judge_model="qwen3:14b",
@@ -92,17 +92,41 @@ def test_reset_builds_a_fresh_graph_with_indices_and_closes_the_old_one(tmp_path
     assert made[1].built == 1
 
 
-def test_ingest_adds_one_episode_per_turn_with_group_and_reference_time(tmp_path):
+def test_ingest_adds_one_episode_per_session_with_group_and_reference_time(tmp_path):
     system, made = make(tmp_path)
     system.reset("q1:11")
     stats = system.ingest(session())
+    stats = system.ingest(session(1))
     eps = made[-1].episodes
     assert len(eps) == 2
     assert eps[0]["group_id"] == "q1_11"
     assert eps[0]["reference_time"].tzinfo == timezone.utc
-    assert "Rex" in eps[0]["episode_body"] and eps[0]["episode_body"].startswith("user:")
-    assert eps[0]["name"].startswith("s0")
+    body = eps[0]["episode_body"]
+    assert body.startswith("user: I adopted a dog named Rex.") and "\nassistant: Nice." in body
+    assert eps[0]["name"] == "s0" and eps[1]["name"] == "s1"
     assert isinstance(stats, IngestStats) and stats.store_items == 2
+
+
+def test_reasoning_off_client_sends_the_flag_on_every_completion():
+    import asyncio
+
+    seen: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(request.content))
+        return httpx.Response(200, json={
+            "id": "x", "object": "chat.completion", "created": 0, "model": "m",
+            "choices": [{"index": 0, "finish_reason": "stop",
+                         "message": {"role": "assistant", "content": "{}"}}],
+        })
+
+    client = reasoning_off_client(
+        "k", "http://router.test/api/v1", http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    )
+    asyncio.run(client.chat.completions.create(
+        model="m", messages=[{"role": "user", "content": "hi"}], extra_body={"seed": 1}
+    ))
+    assert seen[0]["reasoning"] == {"enabled": False} and seen[0]["seed"] == 1
 
 
 def test_answer_searches_the_group_and_answers_from_facts(tmp_path):
