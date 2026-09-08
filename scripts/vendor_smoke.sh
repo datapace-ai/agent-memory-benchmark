@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
-# Vendor smoke: 2 questions, the three product adapters, one seed, live Ollama.
-# Refuses to run while the phase 1 full run holds its lock.
+# Vendor smoke: one question through each product on the configured free
+# model, one seed, in the vendors environment. Cognee and Graphiti need a
+# model that accepts JSON-schema output (see configs/tracks.yaml).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [ -e results/runs/runs.jsonl.lock ]; then
-  echo "phase 1 full run is in progress (results/runs/runs.jsonl.lock exists); not touching Ollama" >&2
-  exit 2
-fi
+set -a; [ -f .env ] && . ./.env; set +a
 export UV_PROJECT_ENVIRONMENT=.venv-vendors
-./scripts/create_nothink_model.sh
-./scripts/letta_server.sh
 uv run python -m membench.run \
-  --limit 2 --seeds 11 --systems file,mem0,langmem,cognee,graphiti,letta \
+  --limit 1 --seeds 11 --systems file,mem0,langmem,cognee,graphiti --workers 1 \
   --out results/runs/vendor-smoke.jsonl
 uv run python -m membench.report \
   --runs results/runs/vendor-smoke.jsonl \

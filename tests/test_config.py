@@ -17,7 +17,7 @@ def test_load_models_returns_typed_config():
 
 
 def test_ollama_config_file_still_loads():
-    cfg = load_models(REPO_ROOT / "configs" / "models.ollama.yaml")
+    cfg = load_models(REPO_ROOT / "local-track" / "models.ollama.yaml")
     assert cfg.provider == "ollama"
     assert cfg.base_url == "http://localhost:11434"
     assert cfg.openai_compat_model == "qwen3-nothink:14b"

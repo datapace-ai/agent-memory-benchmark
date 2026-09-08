@@ -8,5 +8,5 @@ results/runs/*.lock
 .venv-vendors/
 results/vendor-smoke/
 data/vendor-stores/
-models/*.orig
+local-track/*.orig
 .env

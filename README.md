@@ -43,19 +43,36 @@ Product adapters live in a second environment until the phase 1 run finishes:
 
 ## Reproduce
 
-```bash
-brew install ollama && ollama serve &
-ollama pull qwen3:14b && ollama pull nomic-embed-text
+Everything runs on free models through OpenRouter. Create a free account,
+make a key, and put it in `.env` (never committed):
 
-uv sync --extra dev
-uv run pytest -q
-uv run python -m membench.data.download
-./scripts/smoke.sh
+```bash
+cp .env.example .env   # then paste your key after OPENROUTER_API_KEY=
 ```
 
-A full run is `uv run python -m membench.run` followed by
-`uv run python -m membench.report`. It is resumable: rerun the same command
-after an interruption and it continues where it stopped.
+Then:
+
+```bash
+uv sync --extra dev
+uv run pytest -q
+./scripts/smoke.sh                          # 5 questions, oracle and window, one seed
+```
+
+The products need their own environment, because their dependencies conflict
+with each other and with the harness:
+
+```bash
+UV_PROJECT_ENVIRONMENT=.venv-vendors uv sync --extra dev --extra vendors
+./scripts/vendor_smoke.sh                   # 1 question through each product
+./scripts/run_tracks.sh --limit 10 --seeds 11 --workers 2   # the pilot
+```
+
+`scripts/run_tracks.sh` runs every track in `configs/tracks.yaml` with the
+systems that track can carry and writes a report per track. Runs are
+resumable: rerun the same command after an interruption or a rate-limit stop
+and it continues where it stopped; add `--retry-errors` to redo units that
+failed on the endpoint. The question set is committed, so no download is
+needed; `python -m membench.data.download` rebuilds it from LongMemEval.
 
 ## Model tracks
 
@@ -68,6 +85,10 @@ the answerer, not the grader.
 
 ## Cost
 
-Zero. Everything runs on a local model.
+Zero dollars. OpenRouter's free tier allows 20 requests per minute and 1,000
+per day per account; a ten-question track for the two graph products uses
+most of a day. A local setup from the first phase is kept under
+`local-track/` for anyone who prefers to run offline; the published results
+do not use it.
 
 See `METHODS.md` for the protocol, the dataset reduction, and the limits.

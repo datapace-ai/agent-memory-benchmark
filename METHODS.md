@@ -65,7 +65,7 @@ tags, the judge, and the embedding model are recorded in every run record.
   (384 dimensions), because no free API serves embeddings.
 
 The original local track (Ollama, qwen3:14b, reasoning off) is kept in
-`configs/models.ollama.yaml` for anyone who wants to reproduce on their own
+`local-track/models.ollama.yaml` for anyone who wants to reproduce on their own
 machine; its measured cost per unit is below.
 
 ### Local track, kept for reference
@@ -109,8 +109,8 @@ Graphiti opens a fresh embedded database; Letta deletes and recreates the agent.
 The `qwen3-nothink:14b` variant is `qwen3:14b` with two template edits that
 force the `/no_think` switch and an empty think block on every turn, for
 libraries that reach Ollama through its OpenAI-compatible endpoint, which has
-no reasoning flag. `scripts/create_nothink_model.sh` builds it and
-`models/Modelfile.qwen3-nothink` is committed.
+no reasoning flag. `local-track/create_nothink_model.sh` builds it and
+`local-track/Modelfile.qwen3-nothink` is committed.
 
 Embeddings for the products on an API track are `BAAI/bge-small-en-v1.5`
 (384 dimensions) on the CPU: LangChain `HuggingFaceEmbeddings` for Mem0 and
