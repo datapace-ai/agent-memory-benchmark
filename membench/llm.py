@@ -27,8 +27,10 @@ from membench.config import ModelConfig
 _THINK = re.compile(r"<think>.*?</think>", re.DOTALL)
 _OLLAMA_RETRIES = 3
 _OLLAMA_BACKOFF = (1.0, 4.0)
-_COMPAT_RETRIES = 6
-_COMPAT_BACKOFF = (2.0, 5.0, 15.0, 30.0, 60.0)
+# Free endpoints fail in bursts of a minute or more; the tail covers about
+# five and a half minutes before a unit is recorded as an error.
+_COMPAT_RETRIES = 8
+_COMPAT_BACKOFF = (2.0, 5.0, 15.0, 30.0, 60.0, 90.0, 120.0)
 
 
 @dataclass(frozen=True)

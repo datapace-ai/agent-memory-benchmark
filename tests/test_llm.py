@@ -265,7 +265,7 @@ def test_compat_provider_error_in_200_body_is_retried_then_raised(monkeypatch):
 
     with pytest.raises(RuntimeError, match="upstream"):
         compat_client(handler, monkeypatch).complete("s", "u", seed=11)
-    assert calls["n"] == 6
+    assert calls["n"] == 8
 
 
 def test_compat_paces_requests(monkeypatch):
