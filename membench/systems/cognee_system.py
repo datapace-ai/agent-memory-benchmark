@@ -11,7 +11,6 @@ Reference: topoteretes/cognee README and .env.template.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import re
@@ -22,7 +21,7 @@ from membench.config import ModelConfig
 from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.shared import answer_from_context, api_key, session_text
+from membench.systems.shared import answer_from_context, api_key, session_text, run_async
 
 
 def cognee_environment(cfg: ModelConfig, seed: int, store_dir: Path) -> dict[str, str]:
@@ -71,7 +70,7 @@ def cognee_environment(cfg: ModelConfig, seed: int, store_dir: Path) -> dict[str
 
 
 def _run(coro):
-    return asyncio.run(coro)
+    return run_async(coro)
 
 
 def _dataset_name(namespace: str) -> str:

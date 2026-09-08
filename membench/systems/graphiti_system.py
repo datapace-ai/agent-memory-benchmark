@@ -19,7 +19,6 @@ EntityEdge with .fact).
 
 from __future__ import annotations
 
-import asyncio
 import re
 import shutil
 import time
@@ -31,7 +30,7 @@ from membench.config import ModelConfig
 from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.shared import answer_from_context, api_key
+from membench.systems.shared import answer_from_context, api_key, run_async
 
 _DATE = re.compile(r"(\d{4})/(\d{2})/(\d{2}).*?(\d{2}):(\d{2})")
 
@@ -45,7 +44,7 @@ def parse_session_date(date: str) -> datetime:
 
 
 def _run(coro):
-    return asyncio.run(coro)
+    return run_async(coro)
 
 
 def _group(namespace: str) -> str:

@@ -8,6 +8,9 @@ so the answer step and its token counts are identical across systems.
 
 from __future__ import annotations
 
+import asyncio
+import threading
+
 import time
 
 from membench.config import ModelConfig
@@ -110,3 +113,21 @@ def embeddings(cfg: ModelConfig):
     from langchain_ollama import OllamaEmbeddings
 
     return OllamaEmbeddings(model=cfg.embed_model, base_url=cfg.base_url)
+
+
+_LOOPS = threading.local()
+
+
+def run_async(coro):
+    """Run a coroutine on one persistent event loop per thread.
+
+    Cognee and Graphiti keep asyncio locks and clients bound to the loop that
+    created them. asyncio.run() makes a new loop per call, so the second call
+    fails with "is bound to a different event loop". One loop per worker thread
+    keeps every call of a unit on the loop that built its objects.
+    """
+    loop = getattr(_LOOPS, "loop", None)
+    if loop is None or loop.is_closed():
+        loop = asyncio.new_event_loop()
+        _LOOPS.loop = loop
+    return loop.run_until_complete(coro)
