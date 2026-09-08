@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 382" width="880" height="382" font-family="Helvetica, Arial, sans-serif" font-size="12">
+<rect x="0" y="0" width="880" height="382" fill="#ffffff"/>
+<line x1="150.0" y1="22.0" x2="150.0" y2="338.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="150.0" y="356.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">0</text>
+<line x1="288.0" y1="22.0" x2="288.0" y2="338.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="288.0" y="356.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">20</text>
+<line x1="426.0" y1="22.0" x2="426.0" y2="338.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="426.0" y="356.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">40</text>
+<line x1="564.0" y1="22.0" x2="564.0" y2="338.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="564.0" y="356.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">60</text>
+<line x1="702.0" y1="22.0" x2="702.0" y2="338.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="702.0" y="356.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">80</text>
+<line x1="840.0" y1="22.0" x2="840.0" y2="338.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="840.0" y="356.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">100</text>
+<text x="495.0" y="374.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Accuracy, LongMemEval rule, with 95% interval. Green: Ling answering. Ochre: Nemotron answering.</text>
+<text x="136.0" y="56.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Oracle ceiling</text>
+<line x1="633.0" y1="44.0" x2="840.0" y2="44.0" stroke="#0f8a5f" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="771.0" cy="44.0" r="6" fill="#0f8a5f"/>
+<line x1="357.0" y1="60.0" x2="771.0" y2="60.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="564.0" cy="60.0" r="6" fill="#a8791a"/>
+<line x1="10.0" y1="74.0" x2="840.0" y2="74.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="136.0" y="100.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Window 32k</text>
+<line x1="495.0" y1="88.0" x2="840.0" y2="88.0" stroke="#0f8a5f" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="702.0" cy="88.0" r="6" fill="#0f8a5f"/>
+<line x1="288.0" y1="104.0" x2="702.0" y2="104.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="495.0" cy="104.0" r="6" fill="#a8791a"/>
+<line x1="10.0" y1="118.0" x2="840.0" y2="118.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="136.0" y="144.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">File search</text>
+<line x1="495.0" y1="132.0" x2="840.0" y2="132.0" stroke="#0f8a5f" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="702.0" cy="132.0" r="6" fill="#0f8a5f"/>
+<line x1="426.0" y1="148.0" x2="840.0" y2="148.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="633.0" cy="148.0" r="6" fill="#a8791a"/>
+<line x1="10.0" y1="162.0" x2="840.0" y2="162.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="136.0" y="188.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Mem0</text>
+<line x1="426.0" y1="176.0" x2="840.0" y2="176.0" stroke="#0f8a5f" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="633.0" cy="176.0" r="6" fill="#0f8a5f"/>
+<line x1="288.0" y1="192.0" x2="702.0" y2="192.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="495.0" cy="192.0" r="6" fill="#a8791a"/>
+<text x="714.0" y="196.0" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">9 of 10 done</text>
+<line x1="10.0" y1="206.0" x2="840.0" y2="206.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="136.0" y="232.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">LangMem</text>
+<line x1="426.0" y1="220.0" x2="840.0" y2="220.0" stroke="#0f8a5f" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="633.0" cy="220.0" r="6" fill="#0f8a5f"/>
+<line x1="426.0" y1="236.0" x2="840.0" y2="236.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="633.0" cy="236.0" r="6" fill="#a8791a"/>
+<line x1="10.0" y1="250.0" x2="840.0" y2="250.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="136.0" y="276.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Cognee</text>
+<text x="154.0" y="268.0" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">not runnable: Ling has no JSON mode</text>
+<line x1="150.0" y1="280.0" x2="412.2" y2="280.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="232.8" cy="280.0" r="6" fill="#a8791a"/>
+<text x="424.2" y="284.0" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">4 of 10 done</text>
+<line x1="10.0" y1="294.0" x2="840.0" y2="294.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="136.0" y="320.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Graphiti</text>
+<text x="154.0" y="312.0" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">not runnable: Ling has no JSON mode</text>
+<line x1="150.0" y1="324.0" x2="150.0" y2="324.0" stroke="#a8791a" stroke-width="3" stroke-opacity="0.35"/>
+<circle cx="150.0" cy="324.0" r="6" fill="#a8791a"/>
+<text x="162.0" y="328.0" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">1 of 10 done</text>
+</svg>

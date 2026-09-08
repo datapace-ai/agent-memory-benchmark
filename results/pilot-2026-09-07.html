@@ -1,0 +1,379 @@
+<title>Memory Benchmark Pilot</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f2f4f6;
+    --surface: #ffffff;
+    --ink: #171d24;
+    --muted: #667080;
+    --rule: #d6dbe1;
+    --grid: #e6eaee;
+    --green: #0f8a5f;
+    --green-soft: #d7efe4;
+    --ochre: #a8791a;
+    --ochre-soft: #f3e7c9;
+    --red: #b3261e;
+    --heat-0: #f4f6f8;
+    --heat-50: #cfe9dc;
+    --heat-100: #0f8a5f;
+    --heat-100-ink: #ffffff;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1317; --surface: #161b21; --ink: #e8ebee; --muted: #9aa4ae; --rule: #2b333c; --grid: #222a32;
+      --green: #3ccf8e; --green-soft: #143d2c; --ochre: #e0b33a; --ochre-soft: #3d3114; --red: #ef6a5f;
+      --heat-0: #1b2128; --heat-50: #1f4a37; --heat-100: #3ccf8e; --heat-100-ink: #0f1317;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1317; --surface: #161b21; --ink: #e8ebee; --muted: #9aa4ae; --rule: #2b333c; --grid: #222a32;
+    --green: #3ccf8e; --green-soft: #143d2c; --ochre: #e0b33a; --ochre-soft: #3d3114; --red: #ef6a5f;
+    --heat-0: #1b2128; --heat-50: #1f4a37; --heat-100: #3ccf8e; --heat-100-ink: #0f1317;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.55;
+  }
+  .page { max-width: 940px; margin: 0 auto; padding: 48px 24px 96px; display: grid; gap: 56px; }
+  h1, h2 { font-family: "Instrument Serif", Georgia, "Times New Roman", serif; font-weight: 400; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+  h1 { font-size: 44px; line-height: 1.05; }
+  h2 { font-size: 30px; line-height: 1.15; }
+  p { margin: 0; max-width: 66ch; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 60ch; }
+  .eyebrow { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  header { display: grid; gap: 18px; }
+  .setup { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .setup div { padding: 12px 14px 12px 0; display: grid; gap: 2px; }
+  .setup div + div { padding-left: 14px; border-left: 1px solid var(--rule); }
+  .setup dt { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .setup dd { margin: 0; font-size: 15px; font-weight: 500; }
+  section { display: grid; gap: 16px; }
+  .reading { display: grid; gap: 10px; }
+  .chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 18px 12px; overflow-x: auto; }
+  svg { display: block; width: 100%; height: auto; font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; }
+  svg text { fill: var(--ink); font-size: 12px; }
+  svg .mono { font-family: "IBM Plex Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+  svg .muted { fill: var(--muted); }
+  svg .axis { stroke: var(--rule); stroke-width: 1; }
+  svg .gridline { stroke: var(--grid); stroke-width: 1; }
+  svg .ceiling { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 4 4; }
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: var(--muted); padding-top: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .swatch.green { background: var(--green); }
+  .swatch.ochre { background: var(--ochre); }
+  .swatch.ink { background: var(--ink); }
+  .swatch.hollow { border: 2px solid var(--ink); background: transparent; }
+  .swatch.bar-ingest { border-radius: 2px; background: var(--muted); }
+  .swatch.bar-answer { border-radius: 2px; background: var(--green); }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  th { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  td.num, th.num { text-align: right; font-family: "IBM Plex Mono", Menlo, monospace; }
+  td.pale { color: var(--muted); }
+  .note { font-size: 14px; color: var(--muted); max-width: 66ch; }
+  .caveat { border-left: 3px solid var(--ochre); padding: 4px 0 4px 16px; display: grid; gap: 6px; max-width: 66ch; }
+  .caveat strong { font-weight: 600; }
+  .takeaways { display: grid; gap: 14px; padding: 0; margin: 0; list-style: none; counter-reset: t; max-width: 66ch; }
+  .takeaways li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: baseline; }
+  .takeaways li::before { counter-increment: t; content: counter(t); font-family: "Instrument Serif", Georgia, serif; font-size: 24px; color: var(--green); line-height: 1; }
+  .takeaways b { font-weight: 600; }
+  footer { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+  a { color: var(--green); }
+  @media (max-width: 600px) { h1 { font-size: 34px; } h2 { font-size: 26px; } .page { padding: 32px 16px 64px; gap: 44px; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="page">
+  <header>
+    <div class="eyebrow">Agent memory benchmark, pilot run, 7 September 2026</div>
+    <h1>Products remember cheaply. Nobody remembers better than the context window.</h1>
+    <p class="lede">Ten LongMemEval questions, two per ability, one seed, every system answered by the same free model and graded by the same judge. Read the numbers as directions: at this size one question is ten points.</p>
+    <dl class="setup">
+      <div><dt>Questions</dt><dd>10, from LongMemEval S</dd></div>
+      <div><dt>History per question</dt><dd>12 sessions, ~127 turns</dd></div>
+      <div><dt>Answerer, track A</dt><dd>Ling 3.0 Flash</dd></div>
+      <div><dt>Answerer, track B</dt><dd>Nemotron 3 Super 120B</dd></div>
+      <div><dt>Judge, both tracks</dt><dd>Ling 3.0 Flash, three rules</dd></div>
+      <div><dt>Cost</dt><dd>0 dollars, free tier only</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">1 · Accuracy against context spent</div>
+      <h2>Cheaper, not more accurate</h2>
+      <p>Mem0 and LangMem answer with 20 to 50 times fewer tokens than the two baselines and land one question lower. The dashed line is the oracle, which sees only the sessions that hold the evidence: the best this answerer and judge can do on these ten questions. Whiskers are 95% bootstrap intervals, and every whisker overlaps every other.</p>
+    </div>
+    <div class="chart">
+      <svg id="scatter" viewBox="0 0 880 400" role="img" aria-label="Accuracy versus tokens per answer, Ling track"></svg>
+      <div class="legend"><span><i class="swatch hollow"></i>Oracle ceiling</span><span><i class="swatch ink"></i>Baselines</span><span><i class="swatch green"></i>Memory products</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">2 · Same questions, same judge, different answerer</div>
+      <h2>The ceiling moves with the model, not the memory</h2>
+      <p>Switching the answering model from Ling to Nemotron moved the oracle from 90 to 60 before any memory system was involved. A vendor table that quotes a different model is quoting a different ceiling. Compare products only under one model, and print the oracle next to them. Cognee and Graphiti need JSON-schema output, which Ling's endpoint refuses, so they exist only on the Nemotron track and are still partial.</p>
+    </div>
+    <div class="chart">
+      <svg id="paired" viewBox="0 0 880 380" role="img" aria-label="Accuracy per system on the Ling and Nemotron tracks"></svg>
+      <div class="legend"><span><i class="swatch green"></i>Ling 3.0 Flash answering</span><span><i class="swatch ochre"></i>Nemotron 3 Super answering</span><span>Bars: 95% interval</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">3 · Where each system loses, Ling track</div>
+      <h2>Nobody knows what they don't know</h2>
+      <p>Two questions per ability, so each cell is 0, 50 or 100. The abstention column is the one to read: every system except the raw window scored 50, and the window's 100 is the judge accepting a long refusal. Memory layers do not fix an answerer's habit of inventing a fish count for a tank the user never mentioned.</p>
+    </div>
+    <div class="chart">
+      <svg id="heat" viewBox="0 0 880 300" role="img" aria-label="Accuracy by ability and system, Ling track"></svg>
+    </div>
+  </section>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">4 · Seconds per question, Nemotron track, medians</div>
+      <h2>Knowledge graphs are paid for at ingest</h2>
+      <p>Vendors show answer latency, which is under two seconds for every product. They do not show ingest. Cognee and Graphiti spend six to eight minutes per question turning twelve sessions into a graph, on the order of a hundred model calls, against one call for the baselines. On a free endpoint that fails one call in four, that ingest is also where the failures land. Graphiti's bar is one finished question; Cognee's is four.</p>
+    </div>
+    <div class="chart">
+      <svg id="time" viewBox="0 0 880 340" role="img" aria-label="Ingest and answer seconds per question by system"></svg>
+      <div class="legend"><span><i class="swatch bar-ingest"></i>Ingest, all twelve sessions</span><span><i class="swatch bar-answer"></i>Answer, retrieval plus generation</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">5 · Three published grading rules on the same answers</div>
+      <h2>The judge is a tenth of the score</h2>
+      <p>LongMemEval's verbatim rubric, Zep's "same topic" rule and Mem0's partial-credit rule, applied by the same judge to the same answers. Ten points of daylight between rules is common. Before the grader was fixed to answer in one word, a truncated chain of thought had flipped five of twenty verdicts.</p>
+    </div>
+    <div class="chart" style="padding: 6px 18px 10px;">
+      <table>
+        <thead><tr><th>System</th><th class="num">LongMemEval</th><th class="num">Zep rule</th><th class="num">Mem0 rule</th><th class="num">LongMemEval</th><th class="num">Zep rule</th><th class="num">Mem0 rule</th></tr></thead>
+        <thead><tr><th></th><th colspan="3" style="text-align:center; color: var(--green);">Ling answering</th><th colspan="3" style="text-align:center; color: var(--ochre);">Nemotron answering</th></tr></thead>
+        <tbody>
+          <tr><td>Oracle ceiling</td><td class="num">90</td><td class="num">90</td><td class="num">90</td><td class="num">60</td><td class="num">60</td><td class="num">70</td></tr>
+          <tr><td>Window, 32k tokens</td><td class="num">80</td><td class="num">80</td><td class="num">80</td><td class="num">50</td><td class="num">50</td><td class="num">70</td></tr>
+          <tr><td>File search, 8 tool calls</td><td class="num">80</td><td class="num">80</td><td class="num">90</td><td class="num">70</td><td class="num">70</td><td class="num">80</td></tr>
+          <tr><td>Mem0</td><td class="num">70</td><td class="num">70</td><td class="num">70</td><td class="num">50</td><td class="num">50</td><td class="num">60</td></tr>
+          <tr><td>LangMem</td><td class="num">70</td><td class="num">70</td><td class="num">70</td><td class="num">70</td><td class="num">70</td><td class="num">70</td></tr>
+          <tr><td>Cognee</td><td class="pale">not runnable</td><td class="pale"></td><td class="pale"></td><td class="num pale">25 of 4 done</td><td class="num pale">25</td><td class="num pale">50</td></tr>
+          <tr><td>Graphiti</td><td class="pale">not runnable</td><td class="pale"></td><td class="pale"></td><td class="num pale">0 of 1 done</td><td class="num pale">0</td><td class="num pale">0</td></tr>
+        </tbody>
+      </table>
+      <p class="note" style="padding-top: 10px;">Nemotron's Mem0 row counts one unit that died on the endpoint as wrong; over the nine finished units it is 56. Cognee and Graphiti rows are over finished units only.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">6 · What one free day buys</div>
+      <h2>Free tiers benchmark ten questions a day</h2>
+      <p>OpenRouter's free tier caps the account at 1,000 requests per day across all free models, on top of 20 per minute. One day bought the whole Ling track, its re-judge, the model probes and most of the Nemotron track. The two graph products spend most of that budget on their own, so on this tier they advance about ten questions a day and a hundred-question run is weeks of daily resets or a few dollars.</p>
+    </div>
+    <div class="chart">
+      <svg id="budget" viewBox="0 0 880 150" role="img" aria-label="Share of one day's 1000 free requests per unit of work"></svg>
+    </div>
+  </section>
+
+  <section>
+    <div class="reading">
+      <div class="eyebrow">What to carry into the article</div>
+      <h2>Six learnings, in order of weight</h2>
+    </div>
+    <ol class="takeaways">
+      <li><span><b>Name the answering model and print the oracle.</b> The model moved the ceiling by thirty points; no product moved anything by that much.</span></li>
+      <li><span><b>Products buy context, not recall.</b> Same neighbourhood as the baselines at a fraction of the tokens; nobody beat file search.</span></li>
+      <li><span><b>Abstention is unsolved by memory.</b> Fifty across the board.</span></li>
+      <li><span><b>Report three judge rules and a hand-checked sample.</b> The rule is worth ten points; a truncated grader was worth twenty-five.</span></li>
+      <li><span><b>Ask vendors for ingest cost, not answer latency.</b> Minutes and a hundred calls per question for the graph products.</span></li>
+      <li><span><b>Budget in requests per day.</b> A thousand free calls is ten product questions.</span></li>
+    </ol>
+    <div class="caveat"><strong>Sample size, stated plainly.</strong><span>Ten questions, one seed, two per ability. Intervals span thirty to sixty points. Every ranking here can flip on one question; the methodology findings cannot.</span></div>
+  </section>
+
+  <footer>
+    <span>Harness, run records and judge transcripts: datapace-ai/agent-memory-benchmark on GitHub, results/tracks and results/runs.</span>
+    <span>Questions come from LongMemEval S; sessions ingested one at a time in date order; the answerer never sees a session before its date.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const ns = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, text) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  // Ling track: accuracy (LongMemEval rule) and 95% interval, tokens per answer.
+  const ling = [
+    { key: "oracle", name: "Oracle ceiling", acc: 90, lo: 70, hi: 100, tokens: 6585, kind: "oracle" },
+    { key: "window", name: "Window 32k", acc: 80, lo: 50, hi: 100, tokens: 26828, kind: "baseline" },
+    { key: "file", name: "File search", acc: 80, lo: 50, hi: 100, tokens: 15604, kind: "baseline" },
+    { key: "mem0", name: "Mem0", acc: 70, lo: 40, hi: 100, tokens: 539, kind: "product" },
+    { key: "langmem", name: "LangMem", acc: 70, lo: 40, hi: 100, tokens: 1632, kind: "product" },
+  ];
+  const nemo = {
+    oracle: { acc: 60, lo: 30, hi: 90 }, window: { acc: 50, lo: 20, hi: 80 }, file: { acc: 70, lo: 40, hi: 100 },
+    mem0: { acc: 50, lo: 20, hi: 80 }, langmem: { acc: 70, lo: 40, hi: 100 },
+    cognee: { acc: 25, lo: 0, hi: 62, partial: "4 of 10 done" }, graphiti: { acc: 0, lo: 0, hi: 0, partial: "1 of 10 done" },
+  };
+
+  // 1. Scatter: log tokens vs accuracy
+  (function scatter() {
+    const svg = document.getElementById("scatter");
+    const W = 880, H = 400, L = 56, R = 24, T = 24, B = 56;
+    const x = t => L + (Math.log10(t) - 2) / (Math.log10(40000) - 2) * (W - L - R);
+    const y = a => T + (100 - a) / 100 * (H - T - B);
+    [0, 20, 40, 60, 80, 100].forEach(v => {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "gridline" }));
+      svg.appendChild(el("text", { x: L - 10, y: y(v) + 4, "text-anchor": "end", class: "mono muted" }, v));
+    });
+    [100, 300, 1000, 3000, 10000, 30000].forEach(v => {
+      svg.appendChild(el("line", { x1: x(v), x2: x(v), y1: T, y2: H - B, class: "gridline" }));
+      svg.appendChild(el("text", { x: x(v), y: H - B + 18, "text-anchor": "middle", class: "mono muted" }, v >= 1000 ? (v / 1000) + "k" : v));
+    });
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: H - B, y2: H - B, class: "axis" }));
+    svg.appendChild(el("text", { x: (L + W - R) / 2, y: H - 14, "text-anchor": "middle", class: "muted" }, "Prompt tokens per answer, log scale"));
+    svg.appendChild(el("text", { x: 14, y: T + 10, class: "muted", transform: `rotate(-90 14 ${T + 10})`, "text-anchor": "end" }, "Accuracy, LongMemEval rule"));
+    const oracle = ling[0];
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: y(oracle.acc), y2: y(oracle.acc), class: "ceiling" }));
+    svg.appendChild(el("text", { x: W - R, y: y(oracle.acc) - 8, "text-anchor": "end", class: "muted" }, "Oracle ceiling 90"));
+    ling.forEach(d => {
+      const cx = x(d.tokens), cy = y(d.acc);
+      svg.appendChild(el("line", { x1: cx, x2: cx, y1: y(d.lo), y2: y(d.hi), stroke: css("--rule"), "stroke-width": 2 }));
+      const fill = d.kind === "product" ? css("--green") : d.kind === "baseline" ? css("--ink") : css("--surface");
+      svg.appendChild(el("circle", { cx, cy, r: 7, fill, stroke: css("--ink"), "stroke-width": d.kind === "oracle" ? 2 : 0 }));
+      const dx = d.key === "file" ? -12 : 12, anchor = d.key === "file" ? "end" : "start";
+      const dy = d.key === "langmem" ? 22 : d.key === "mem0" ? -12 : -12;
+      svg.appendChild(el("text", { x: cx + dx, y: cy + dy, "text-anchor": anchor, "font-weight": 500 }, `${d.name} · ${d.acc}`));
+      svg.appendChild(el("text", { x: cx + dx, y: cy + dy + 14, "text-anchor": anchor, class: "mono muted" }, d.tokens.toLocaleString("en-US") + " tok"));
+    });
+  })();
+
+  // 2. Paired dot plot per system, two tracks
+  (function paired() {
+    const svg = document.getElementById("paired");
+    const rows = [
+      { key: "oracle", name: "Oracle ceiling" }, { key: "window", name: "Window 32k" }, { key: "file", name: "File search" },
+      { key: "mem0", name: "Mem0" }, { key: "langmem", name: "LangMem" }, { key: "cognee", name: "Cognee" }, { key: "graphiti", name: "Graphiti" },
+    ];
+    const W = 880, L = 150, R = 30, T = 28, rowH = 44, B = 40, H = T + rows.length * rowH + B;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const x = a => L + a / 100 * (W - L - R);
+    [0, 20, 40, 60, 80, 100].forEach(v => {
+      svg.appendChild(el("line", { x1: x(v), x2: x(v), y1: T - 8, y2: H - B, class: "gridline" }));
+      svg.appendChild(el("text", { x: x(v), y: H - B + 18, "text-anchor": "middle", class: "mono muted" }, v));
+    });
+    svg.appendChild(el("text", { x: (L + W - R) / 2, y: H - 8, "text-anchor": "middle", class: "muted" }, "Accuracy, LongMemEval rule, with 95% interval"));
+    rows.forEach((r, i) => {
+      const yc = T + i * rowH + rowH / 2;
+      svg.appendChild(el("text", { x: L - 14, y: yc + 4, "text-anchor": "end", "font-weight": 500 }, r.name));
+      const a = ling.find(d => d.key === r.key), b = nemo[r.key];
+      if (a) {
+        svg.appendChild(el("line", { x1: x(a.lo), x2: x(a.hi), y1: yc - 8, y2: yc - 8, stroke: css("--green"), "stroke-width": 3, "stroke-opacity": 0.35 }));
+        svg.appendChild(el("circle", { cx: x(a.acc), cy: yc - 8, r: 6, fill: css("--green") }));
+      } else {
+        svg.appendChild(el("text", { x: x(0) + 4, y: yc - 4, class: "muted" }, "not runnable: Ling has no JSON mode"));
+      }
+      if (b) {
+        svg.appendChild(el("line", { x1: x(b.lo), x2: x(b.hi), y1: yc + 8, y2: yc + 8, stroke: css("--ochre"), "stroke-width": 3, "stroke-opacity": 0.35 }));
+        svg.appendChild(el("circle", { cx: x(b.acc), cy: yc + 8, r: 6, fill: css("--ochre") }));
+        if (b.partial) svg.appendChild(el("text", { x: x(b.hi) + 12, y: yc + 12, class: "mono muted" }, b.partial));
+      }
+      if (a && b) {
+        const drop = a.acc - b.acc;
+        if (Math.abs(drop) >= 20) svg.appendChild(el("text", { x: x(Math.max(a.hi, b.hi)) + 12, y: yc + 4, class: "mono muted" }, (drop > 0 ? "−" : "+") + Math.abs(drop)));
+      }
+      if (i < rows.length - 1) svg.appendChild(el("line", { x1: L - 140, x2: W - R, y1: yc + rowH / 2, y2: yc + rowH / 2, class: "gridline" }));
+    });
+  })();
+
+  // 3. Heatmap
+  (function heat() {
+    const svg = document.getElementById("heat");
+    const abilities = ["abstention", "extraction", "knowledge_update", "multi_session", "temporal"];
+    const labels = { abstention: "Abstention", extraction: "Extraction", knowledge_update: "Knowledge update", multi_session: "Multi-session", temporal: "Temporal" };
+    const data = {
+      "Oracle ceiling": { abstention: 50, extraction: 100, knowledge_update: 100, multi_session: 100, temporal: 100 },
+      "Window 32k": { abstention: 100, extraction: 100, knowledge_update: 100, multi_session: 50, temporal: 50 },
+      "File search": { abstention: 50, extraction: 50, knowledge_update: 100, multi_session: 100, temporal: 100 },
+      "Mem0": { abstention: 50, extraction: 100, knowledge_update: 100, multi_session: 50, temporal: 50 },
+      "LangMem": { abstention: 50, extraction: 100, knowledge_update: 100, multi_session: 50, temporal: 50 },
+    };
+    const names = Object.keys(data);
+    const W = 880, L = 150, T = 40, cellW = (W - L - 20) / abilities.length, cellH = 42, H = T + names.length * cellH + 20;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    abilities.forEach((a, j) => svg.appendChild(el("text", { x: L + j * cellW + cellW / 2, y: T - 14, "text-anchor": "middle", class: "muted" }, labels[a])));
+    names.forEach((n, i) => {
+      const yc = T + i * cellH;
+      svg.appendChild(el("text", { x: L - 14, y: yc + cellH / 2 + 4, "text-anchor": "end", "font-weight": 500 }, n));
+      abilities.forEach((a, j) => {
+        const v = data[n][a];
+        const fill = v === 100 ? css("--heat-100") : v === 50 ? css("--heat-50") : css("--heat-0");
+        const ink = v === 100 ? css("--heat-100-ink") : css("--ink");
+        svg.appendChild(el("rect", { x: L + j * cellW + 3, y: yc + 3, width: cellW - 6, height: cellH - 6, rx: 3, fill, stroke: css("--rule"), "stroke-width": v === 0 ? 1 : 0 }));
+        svg.appendChild(el("text", { x: L + j * cellW + cellW / 2, y: yc + cellH / 2 + 4, "text-anchor": "middle", class: "mono", fill: ink, "font-weight": 500 }, v));
+      });
+    });
+    svg.appendChild(el("text", { x: L, y: H - 4, class: "mono muted" }, "Two questions per ability; 100 = both right, 50 = one, 0 = none."));
+  })();
+
+  // 4. Time bars: ingest vs answer, Nemotron track medians
+  (function time() {
+    const svg = document.getElementById("time");
+    const rows = [
+      { name: "Oracle ceiling", ingest: 0, answer: 7.1 }, { name: "Window 32k", ingest: 0, answer: 9.8 }, { name: "File search", ingest: 0, answer: 52.2 },
+      { name: "LangMem", ingest: 93, answer: 1.4 }, { name: "Mem0", ingest: 139, answer: 1.1 },
+      { name: "Graphiti", ingest: 445, answer: 0.8, note: "1 question" }, { name: "Cognee", ingest: 481, answer: 1.1, note: "4 questions" },
+    ];
+    const W = 880, L = 150, R = 110, T = 20, rowH = 40, B = 44, H = T + rows.length * rowH + B, max = 540;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const x = s => L + s / max * (W - L - R);
+    [0, 60, 120, 180, 240, 300, 360, 420, 480, 540].forEach(v => {
+      svg.appendChild(el("line", { x1: x(v), x2: x(v), y1: T - 6, y2: H - B, class: "gridline" }));
+      if (v % 120 === 0) svg.appendChild(el("text", { x: x(v), y: H - B + 18, "text-anchor": "middle", class: "mono muted" }, v % 60 === 0 ? (v / 60) + " min" : v));
+    });
+    svg.appendChild(el("text", { x: (L + W - R) / 2, y: H - 8, "text-anchor": "middle", class: "muted" }, "Median seconds per question, Nemotron track; the endpoint's own slowness is included"));
+    rows.forEach((r, i) => {
+      const yc = T + i * rowH + 8, h = rowH - 16;
+      svg.appendChild(el("text", { x: L - 14, y: yc + h / 2 + 4, "text-anchor": "end", "font-weight": 500 }, r.name));
+      if (r.ingest > 0) svg.appendChild(el("rect", { x: x(0), y: yc, width: x(r.ingest) - x(0), height: h, fill: css("--muted"), rx: 2 }));
+      svg.appendChild(el("rect", { x: x(r.ingest), y: yc, width: Math.max(2, x(r.ingest + r.answer) - x(r.ingest)), height: h, fill: css("--green"), rx: 2 }));
+      const label = (r.ingest ? `${Math.round(r.ingest)} s ingest + ` : "") + `${r.answer} s answer`;
+      svg.appendChild(el("text", { x: x(r.ingest + r.answer) + 8, y: yc + h / 2 + 4, class: "mono muted" }, label + (r.note ? ` · ${r.note}` : "")));
+    });
+  })();
+
+  // 5. Budget strip: how one day of 1000 free requests was spent (approximate, from the day's logs)
+  (function budget() {
+    const svg = document.getElementById("budget");
+    const parts = [
+      { name: "Ling track, 5 systems × 10 q", share: 0.32, fill: css("--green") },
+      { name: "Re-judge, 3 rules × 50 answers", share: 0.15, fill: css("--green-soft") },
+      { name: "Model probes", share: 0.06, fill: css("--rule") },
+      { name: "Nemotron baselines + Mem0 + LangMem", share: 0.20, fill: css("--ochre") },
+      { name: "Cognee 4 q + Graphiti 1 q", share: 0.27, fill: css("--ochre-soft") },
+    ];
+    const W = 880, L = 20, R = 20, y0 = 30, h = 34;
+    let cursor = L;
+    parts.forEach((p, i) => {
+      const w = p.share * (W - L - R);
+      svg.appendChild(el("rect", { x: cursor, y: y0, width: w - 2, height: h, fill: p.fill, rx: 2, stroke: css("--rule"), "stroke-width": 1 }));
+      const labelY = y0 + h + 22 + (i % 2) * 18;
+      svg.appendChild(el("line", { x1: cursor + w / 2, x2: cursor + w / 2, y1: y0 + h, y2: labelY - 12, class: "axis" }));
+      svg.appendChild(el("text", { x: cursor + w / 2, y: labelY, "text-anchor": "middle", class: "muted" }, `${p.name} · ~${Math.round(p.share * 100)}%`));
+      cursor += w;
+    });
+    svg.appendChild(el("text", { x: L, y: 18, class: "mono muted" }, "1,000 requests, the account's free budget for 7 September, spent in one evening. Shares are approximate."));
+  })();
+})();
+</script>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 274" width="880" height="274" font-family="Helvetica, Arial, sans-serif" font-size="12">
+<rect x="0" y="0" width="880" height="274" fill="#ffffff"/>
+<text x="221.0" y="26.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Abstention</text>
+<text x="363.0" y="26.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Extraction</text>
+<text x="505.0" y="26.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Knowledge update</text>
+<text x="647.0" y="26.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Multi-session</text>
+<text x="789.0" y="26.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Temporal</text>
+<text x="136.0" y="65.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Oracle ceiling</text>
+<rect x="153.0" y="43.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="221.0" y="65.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="295.0" y="43.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="363.0" y="65.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="437.0" y="43.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="505.0" y="65.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="579.0" y="43.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="647.0" y="65.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="721.0" y="43.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="789.0" y="65.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<text x="136.0" y="107.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Window 32k</text>
+<rect x="153.0" y="85.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="221.0" y="107.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="295.0" y="85.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="363.0" y="107.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="437.0" y="85.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="505.0" y="107.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="579.0" y="85.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="647.0" y="107.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="721.0" y="85.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="789.0" y="107.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<text x="136.0" y="149.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">File search</text>
+<rect x="153.0" y="127.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="221.0" y="149.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="295.0" y="127.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="363.0" y="149.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="437.0" y="127.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="505.0" y="149.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="579.0" y="127.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="647.0" y="149.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="721.0" y="127.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="789.0" y="149.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<text x="136.0" y="191.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Mem0</text>
+<rect x="153.0" y="169.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="221.0" y="191.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="295.0" y="169.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="363.0" y="191.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="437.0" y="169.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="505.0" y="191.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="579.0" y="169.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="647.0" y="191.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="721.0" y="169.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="789.0" y="191.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<text x="136.0" y="233.0" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">LangMem</text>
+<rect x="153.0" y="211.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="221.0" y="233.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="295.0" y="211.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="363.0" y="233.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="437.0" y="211.0" width="136.0" height="36.0" rx="3" fill="#0f8a5f"/>
+<text x="505.0" y="233.0" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">100</text>
+<rect x="579.0" y="211.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="647.0" y="233.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<rect x="721.0" y="211.0" width="136.0" height="36.0" rx="3" fill="#cfe9dc"/>
+<text x="789.0" y="233.0" text-anchor="middle" fill="#171d24" font-size="12" font-weight="600" font-family="Menlo, Consolas, monospace">50</text>
+<text x="150.0" y="268.0" text-anchor="start" fill="#667080" font-size="11" font-weight="400" font-family="Menlo, Consolas, monospace">Two questions per ability: 100 = both right, 50 = one, 0 = none. Ling track.</text>
+</svg>

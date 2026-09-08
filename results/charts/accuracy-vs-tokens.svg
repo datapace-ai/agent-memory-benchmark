@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" width="880" height="400" font-family="Helvetica, Arial, sans-serif" font-size="12">
+<rect x="0" y="0" width="880" height="400" fill="#ffffff"/>
+<line x1="56.0" y1="344.0" x2="856.0" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="46.0" y="348.0" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">0</text>
+<line x1="56.0" y1="280.8" x2="856.0" y2="280.8" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="46.0" y="284.8" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">20</text>
+<line x1="56.0" y1="217.6" x2="856.0" y2="217.6" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="46.0" y="221.6" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">40</text>
+<line x1="56.0" y1="154.4" x2="856.0" y2="154.4" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="46.0" y="158.4" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">60</text>
+<line x1="56.0" y1="91.2" x2="856.0" y2="91.2" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="46.0" y="95.2" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">80</text>
+<line x1="56.0" y1="28.0" x2="856.0" y2="28.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="46.0" y="32.0" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">100</text>
+<line x1="56.0" y1="28.0" x2="56.0" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="56.0" y="362.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">100</text>
+<line x1="202.7" y1="28.0" x2="202.7" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="202.7" y="362.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">300</text>
+<line x1="363.4" y1="28.0" x2="363.4" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="363.4" y="362.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">1k</text>
+<line x1="510.1" y1="28.0" x2="510.1" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="510.1" y="362.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">3k</text>
+<line x1="670.9" y1="28.0" x2="670.9" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="670.9" y="362.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">10k</text>
+<line x1="817.6" y1="28.0" x2="817.6" y2="344.0" stroke="#e6eaee" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="817.6" y="362.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">30k</text>
+<line x1="56.0" y1="344.0" x2="856.0" y2="344.0" stroke="#d6dbe1" stroke-width="1.0" stroke-opacity="1.0"/>
+<text x="456.0" y="386.0" text-anchor="middle" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Prompt tokens per answer, log scale</text>
+<text x="14.0" y="38.0" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif" transform="rotate(-90 14.0 38.0)">Accuracy, LongMemEval rule</text>
+<line x1="56.0" y1="59.6" x2="856.0" y2="59.6" stroke="#171d24" stroke-width="1.0" stroke-opacity="1.0" stroke-dasharray="4 4"/>
+<text x="856.0" y="51.6" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Helvetica, Arial, sans-serif">Oracle ceiling 90</text>
+<line x1="615.1" y1="122.8" x2="615.1" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
+<circle cx="615.1" cy="59.6" r="7" fill="#ffffff" stroke="#171d24" stroke-width="2"/>
+<text x="627.1" y="47.6" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Oracle ceiling · 90</text>
+<text x="627.1" y="61.6" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">6,584 tok</text>
+<line x1="802.7" y1="186.0" x2="802.7" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
+<circle cx="802.7" cy="91.2" r="7" fill="#171d24"/>
+<text x="814.7" y="79.2" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Window 32k · 80</text>
+<text x="814.7" y="93.2" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">26,827 tok</text>
+<line x1="730.3" y1="186.0" x2="730.3" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
+<circle cx="730.3" cy="91.2" r="7" fill="#171d24"/>
+<text x="718.3" y="79.2" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">File search · 80</text>
+<text x="718.3" y="93.2" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">15,603 tok</text>
+<line x1="281.0" y1="217.6" x2="281.0" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
+<circle cx="281.0" cy="122.8" r="7" fill="#0f8a5f"/>
+<text x="293.0" y="110.8" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Mem0 · 70</text>
+<text x="293.0" y="124.8" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">539 tok</text>
+<line x1="428.8" y1="217.6" x2="428.8" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
+<circle cx="428.8" cy="122.8" r="7" fill="#0f8a5f"/>
+<text x="440.8" y="144.8" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">LangMem · 70</text>
+<text x="440.8" y="158.8" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">1,631 tok</text>
+<text x="56.0" y="16.0" text-anchor="start" fill="#667080" font-size="11" font-weight="400" font-family="Helvetica, Arial, sans-serif">Whiskers: 95% bootstrap interval. Green: memory products. Black: baselines. Hollow: oracle.</text>
+</svg>
