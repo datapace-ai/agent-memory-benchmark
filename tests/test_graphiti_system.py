@@ -129,6 +129,47 @@ def test_reasoning_off_client_sends_the_flag_on_every_completion():
     assert seen[0]["reasoning"] == {"enabled": False} and seen[0]["seed"] == 1
 
 
+def test_reasoning_off_client_retries_an_upstream_error_inside_a_200_body():
+    import asyncio
+
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(200, json={"error": {"message": "Upstream error from Nvidia: overloaded", "code": 502}})
+        return httpx.Response(200, json={
+            "id": "x", "object": "chat.completion", "created": 0, "model": "m",
+            "choices": [{"index": 0, "finish_reason": "stop",
+                         "message": {"role": "assistant", "content": "{}"}}],
+        })
+
+    client = reasoning_off_client(
+        "k", "http://router.test/api/v1",
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)), retry_delay=0.0,
+    )
+    out = asyncio.run(client.chat.completions.create(model="m", messages=[{"role": "user", "content": "hi"}]))
+    assert calls["n"] == 2 and out.choices[0].message.content == "{}"
+
+
+def test_reasoning_off_client_gives_up_after_four_error_bodies():
+    import asyncio
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"error": {"message": "gone", "code": 404}})
+
+    client = reasoning_off_client(
+        "k", "http://router.test/api/v1",
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)), retry_delay=0.0,
+    )
+    try:
+        asyncio.run(client.chat.completions.create(model="m", messages=[{"role": "user", "content": "hi"}]))
+    except RuntimeError as exc:
+        assert "4 attempts" in str(exc) and "gone" in str(exc)
+    else:
+        raise AssertionError("expected RuntimeError")
+
+
 def test_answer_searches_the_group_and_answers_from_facts(tmp_path):
     system, made = make(tmp_path)
     system.reset("q1:11")

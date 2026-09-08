@@ -91,12 +91,17 @@ def local_embedder(model_name: str, dims: int):
 REASONING_OFF = {"reasoning": {"enabled": False}}
 
 
-def reasoning_off_client(api_key_value: str, base_url: str, http_client=None):
+def reasoning_off_client(api_key_value: str, base_url: str, http_client=None, retry_delay: float = 2.0):
     """AsyncOpenAI client whose chat completions carry OpenRouter's reasoning-off flag.
 
     Graphiti's generic client has no hook for extra request fields, so the
-    completions method is wrapped on this one instance.
+    completions method is wrapped on this one instance. The wrapper also
+    retries a response that carries an upstream error inside an HTTP 200
+    body, which OpenRouter sends for a provider's 502 or 404; the OpenAI
+    client parses it as a completion with no choices and does not retry.
     """
+    import asyncio
+
     from openai import AsyncOpenAI
 
     client = AsyncOpenAI(api_key=api_key_value, base_url=base_url, http_client=http_client)
@@ -106,7 +111,16 @@ def reasoning_off_client(api_key_value: str, base_url: str, http_client=None):
         extra = dict(kwargs.get("extra_body") or {})
         extra.update(REASONING_OFF)
         kwargs["extra_body"] = extra
-        return await original(*args, **kwargs)
+        attempts = 4
+        for attempt in range(attempts):
+            response = await original(*args, **kwargs)
+            if getattr(response, "choices", None):
+                return response
+            error = getattr(response, "error", None) or (response.model_dump().get("error") if hasattr(response, "model_dump") else None)
+            if attempt == attempts - 1:
+                raise RuntimeError(f"upstream error inside a 200 response after {attempts} attempts: {str(error)[:200]}")
+            await asyncio.sleep(retry_delay * (attempt + 1))
+        raise AssertionError("unreachable")
 
     client.chat.completions.create = create  # type: ignore[method-assign]
     return client
