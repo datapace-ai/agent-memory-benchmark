@@ -19,9 +19,10 @@ tracks:
   - name: ling-3.0-flash-fin
     answer_model: inclusionai/ling-3.0-flash-fin:free
     systems: oracle,window,file,mem0,langmem
-  - name: nemotron-3-super-120b
-    answer_model: nvidia/nemotron-3-super-120b-a12b:free
-    systems: oracle,window,file,mem0,langmem,cognee,graphiti
-  - name: cohere-north-mini-code
-    answer_model: cohere/north-mini-code:free
-    systems: oracle,window,file,mem0,langmem
+# Retired after the pilot of 2026-09-07. Their results stay in results/runs and
+# results/tracks; neither is run again.
+#   nemotron-3-super-120b (nvidia/nemotron-3-super-120b-a12b:free): the endpoint
+#     failed about one call in four and every failure cost retries; dropped.
+#   cohere-north-mini-code (cohere/north-mini-code:free): never ran, daily cap.
+# The second track, for the products that need schema-constrained output, is
+# chosen by scripts/answerer_bakeoff.sh among the remaining free models.
