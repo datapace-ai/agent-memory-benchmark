@@ -33,6 +33,9 @@ systems:
     kind: graphiti
     params:
       top_k: 10
+      # The engine's own calls are not paced by the harness; one unit at a
+      # time keeps them under the account's per-minute cap.
+      serial: true
   - name: letta
     kind: letta
     params:

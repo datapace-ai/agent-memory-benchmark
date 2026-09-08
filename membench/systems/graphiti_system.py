@@ -30,7 +30,7 @@ from membench.config import ModelConfig
 from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.shared import answer_from_context, api_key, run_async
+from membench.systems.shared import answer_from_context, api_key, retry_transient, run_async
 
 _DATE = re.compile(r"(\d{4})/(\d{2})/(\d{2}).*?(\d{2}):(\d{2})")
 
@@ -124,13 +124,13 @@ def default_graphiti_factory(cfg: ModelConfig, store_dir: Path) -> Callable[[str
         from graphiti_core.embedder.openai import OpenAIEmbedder, OpenAIEmbedderConfig
         from graphiti_core.llm_client.config import LLMConfig
         from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
-        from redislite.falkordb_client import FalkorDB
+        from redislite.async_falkordb_client import AsyncFalkorDB
 
         path = store_dir / _group(namespace)
         if path.exists():
             shutil.rmtree(path)
         path.mkdir(parents=True)
-        db = FalkorDB(str(path / "falkordb.db"))
+        db = AsyncFalkorDB(dbfilename=str(path / "falkordb.db"))
         model = cfg.openai_compat_model
         if cfg.provider == "openai_compat":
             key = api_key(cfg) or "none"
@@ -207,14 +207,17 @@ class GraphitiSystem(MemorySystem):
         started = time.perf_counter()
         when = parse_session_date(session.date)
         body = session_episode_body(session)
-        _run(
-            graphiti.add_episode(
-                name=session.session_id,
-                episode_body=body,
-                source_description="chat session",
-                reference_time=when,
-                group_id=group,
-            )
+        retry_transient(
+            lambda: _run(
+                graphiti.add_episode(
+                    name=session.session_id,
+                    episode_body=body,
+                    source_description="chat session",
+                    reference_time=when,
+                    group_id=group,
+                )
+            ),
+            what=f"graphiti add_episode {session.session_id}",
         )
         self._episodes += 1
         self._chars += len(body)
@@ -227,7 +230,10 @@ class GraphitiSystem(MemorySystem):
     def answer(self, question: str, question_date: str) -> Answer:
         graphiti, group = self._require()
         started = time.perf_counter()
-        edges = _run(graphiti.search(question, group_ids=[group], num_results=self._top_k))
+        edges = retry_transient(
+            lambda: _run(graphiti.search(question, group_ids=[group], num_results=self._top_k)),
+            what="graphiti search",
+        )
         context = format_edges(list(edges))
         retrieval_seconds = time.perf_counter() - started
         return answer_from_context(

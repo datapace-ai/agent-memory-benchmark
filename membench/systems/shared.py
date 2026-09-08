@@ -9,6 +9,7 @@ so the answer step and its token counts are identical across systems.
 from __future__ import annotations
 
 import asyncio
+import sys
 import threading
 
 import time
@@ -131,3 +132,26 @@ def run_async(coro):
         loop = asyncio.new_event_loop()
         _LOOPS.loop = loop
     return loop.run_until_complete(coro)
+
+
+def retry_transient(call, *, what: str, attempts: int = 3, base_delay: float = 5.0, sleep=time.sleep):
+    """Call again after a failure, with growing delays; raise the last error.
+
+    Free API endpoints answer a share of requests with a fast 502 or a bare
+    404, and the products' own clients do not retry all of them. One retry
+    around each ingest or search call costs seconds; a lost unit costs minutes.
+    """
+    last: BaseException | None = None
+    for attempt in range(attempts):
+        try:
+            return call()
+        except Exception as exc:  # noqa: BLE001, any upstream failure is worth one more try
+            last = exc
+            if attempt == attempts - 1:
+                break
+            delay = base_delay * (3**attempt)
+            print(f"[retry] {what} attempt {attempt + 1}/{attempts} failed: {str(exc)[:160]!r}; "
+                  f"retrying in {delay:.0f}s", file=sys.stderr, flush=True)
+            sleep(delay)
+    assert last is not None
+    raise last

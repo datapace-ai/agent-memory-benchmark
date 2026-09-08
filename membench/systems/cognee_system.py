@@ -21,7 +21,7 @@ from membench.config import ModelConfig
 from membench.data.types import Session
 from membench.llm import LLMClient
 from membench.systems.base import Answer, IngestStats, MemorySystem
-from membench.systems.shared import answer_from_context, api_key, session_text, run_async
+from membench.systems.shared import answer_from_context, api_key, retry_transient, run_async, session_text
 
 
 def cognee_environment(cfg: ModelConfig, seed: int, store_dir: Path) -> dict[str, str]:
@@ -32,6 +32,11 @@ def cognee_environment(cfg: ModelConfig, seed: int, store_dir: Path) -> dict[str
             "LLM_ENDPOINT": cfg.base_url,
             "LLM_API_KEY": api_key(cfg) or "none",
             "LLM_ARGS": json.dumps({"reasoning": {"enabled": False}}),
+            # OpenRouter's free tier allows 20 requests per minute per account;
+            # Cognee's own limiter keeps its internal calls under that.
+            "LLM_RATE_LIMIT_ENABLED": "True",
+            "LLM_RATE_LIMIT_REQUESTS": "15",
+            "LLM_RATE_LIMIT_INTERVAL": "60",
         }
         embedding = {
             "EMBEDDING_PROVIDER": "fastembed",
@@ -144,8 +149,8 @@ class CogneeSystem(MemorySystem):
         cognee = self._mod()
         started = time.perf_counter()
         text = session_text(session)
-        _run(cognee.add(text, dataset_name=dataset))
-        _run(cognee.cognify(datasets=[dataset]))
+        retry_transient(lambda: _run(cognee.add(text, dataset_name=dataset)), what=f"cognee add {session.session_id}")
+        retry_transient(lambda: _run(cognee.cognify(datasets=[dataset])), what=f"cognee cognify {session.session_id}")
         self._items += 1
         self._chars += len(text)
         return IngestStats(
@@ -158,14 +163,17 @@ class CogneeSystem(MemorySystem):
         dataset = self._require()
         cognee = self._mod()
         started = time.perf_counter()
-        result = _run(
-            cognee.search(
-                query_text=question,
-                query_type=cognee.SearchType.GRAPH_COMPLETION,
-                datasets=[dataset],
-                top_k=self._top_k,
-                only_context=True,
-            )
+        result = retry_transient(
+            lambda: _run(
+                cognee.search(
+                    query_text=question,
+                    query_type=cognee.SearchType.GRAPH_COMPLETION,
+                    datasets=[dataset],
+                    top_k=self._top_k,
+                    only_context=True,
+                )
+            ),
+            what="cognee search",
         )
         context = format_context(result)
         retrieval_seconds = time.perf_counter() - started
