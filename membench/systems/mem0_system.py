@@ -25,6 +25,7 @@ from membench.systems.shared import (
     answer_from_context,
     chat_model,
     embeddings,
+    retry_transient,
     session_messages,
 )
 
@@ -125,7 +126,10 @@ class Mem0System(MemorySystem):
         if self._user is None:
             raise RuntimeError("reset must be called before ingest")
         started = time.perf_counter()
-        self._mem().add(session_messages(session), user_id=self._user)
+        retry_transient(
+            lambda: self._mem().add(session_messages(session), user_id=self._user),
+            what=f"mem0 add {session.session_id}",
+        )
         self._sessions += 1
         stored = self._mem().get_all(filters={"user_id": self._user}).get("results", [])
         return IngestStats(
@@ -138,7 +142,10 @@ class Mem0System(MemorySystem):
         if self._user is None:
             raise RuntimeError("reset must be called before answer")
         started = time.perf_counter()
-        found = self._mem().search(question, filters={"user_id": self._user}, top_k=self._top_k)
+        found = retry_transient(
+            lambda: self._mem().search(question, filters={"user_id": self._user}, top_k=self._top_k),
+            what="mem0 search",
+        )
         context = format_results(found.get("results", []))
         retrieval_seconds = time.perf_counter() - started
         return answer_from_context(

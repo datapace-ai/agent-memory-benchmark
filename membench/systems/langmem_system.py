@@ -21,6 +21,7 @@ from membench.systems.shared import (
     answer_from_context,
     chat_model,
     embeddings,
+    retry_transient,
     session_messages,
 )
 
@@ -104,7 +105,10 @@ class LangMemSystem(MemorySystem):
     def ingest(self, session: Session) -> IngestStats:
         manager, config = self._require()
         started = time.perf_counter()
-        manager.invoke({"messages": session_messages(session)}, config=config)
+        retry_transient(
+            lambda: manager.invoke({"messages": session_messages(session)}, config=config),
+            what=f"langmem invoke {session.session_id}",
+        )
         probe = session.turns[0].content if session.turns else ""
         stored = manager.search(query=probe, config=config)
         self._items = len(stored)
@@ -118,7 +122,7 @@ class LangMemSystem(MemorySystem):
     def answer(self, question: str, question_date: str) -> Answer:
         manager, config = self._require()
         started = time.perf_counter()
-        found = manager.search(query=question, config=config)
+        found = retry_transient(lambda: manager.search(query=question, config=config), what="langmem search")
         context = format_memories(list(found))
         retrieval_seconds = time.perf_counter() - started
         return answer_from_context(
