@@ -16,7 +16,7 @@ import time
 
 from membench.config import ModelConfig
 from membench.data.types import Session
-from membench.llm import LLMClient
+from membench.llm import LLMClient, is_daily_cap
 from membench.systems.base import ANSWER_SYSTEM_PROMPT, Answer, build_user_prompt
 
 EMBEDDING_DIMS = 768
@@ -147,6 +147,8 @@ def retry_transient(call, *, what: str, attempts: int = 4, base_delay: float = 5
         try:
             return call()
         except Exception as exc:  # noqa: BLE001, any upstream failure is worth one more try
+            if is_daily_cap(exc):
+                raise
             last = exc
             if attempt == attempts - 1:
                 break

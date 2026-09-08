@@ -25,6 +25,17 @@ import httpx
 from membench.config import ModelConfig
 
 _THINK = re.compile(r"<think>.*?</think>", re.DOTALL)
+DAILY_CAP_MARKER = "free-models-per-day"
+
+
+class DailyCapExceeded(RuntimeError):
+    """OpenRouter's free-tier daily request cap. No retry helps until 00:00 UTC."""
+
+
+def is_daily_cap(exc: BaseException) -> bool:
+    return isinstance(exc, DailyCapExceeded) or DAILY_CAP_MARKER in str(exc)
+
+
 _OLLAMA_RETRIES = 3
 _OLLAMA_BACKOFF = (1.0, 4.0)
 # Free endpoints fail in bursts of a minute or more; the tail covers about
@@ -226,6 +237,8 @@ class LLMClient:
                 else:
                     last = f"HTTP {response.status_code}: {response.text[:300]}"
                     retry_after = response.headers.get("Retry-After")
+                    if response.status_code == 429 and DAILY_CAP_MARKER in response.text:
+                        raise DailyCapExceeded(f"HTTP 429: {response.text[:300]}")
                     if response.status_code == 429:
                         print(
                             f"[llm] rate limited (attempt {attempt + 1}/{retries}), "

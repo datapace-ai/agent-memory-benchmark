@@ -19,7 +19,7 @@ from pathlib import Path
 from membench.config import REPO_ROOT, ModelConfig, SystemConfig, load_models, load_systems
 from membench.data.types import Question, read_jsonl
 from membench.judge.judge import Judge
-from membench.llm import LLMClient
+from membench.llm import DailyCapExceeded, LLMClient, is_daily_cap
 from membench.protocol.clock import run_question
 from membench.systems.registry import build, evidence_only
 
@@ -198,6 +198,9 @@ def run_unit(system_cfg: SystemConfig, question: Question, seed: int, llm: LLMCl
         system = build(system_cfg, llm, seed=seed, models=models)
         run = run_question(system, question, seed, evidence_only=evidence_only(system_cfg))
     except Exception as exc:
+        if is_daily_cap(exc):
+            # Not a unit failure: nothing is recorded, the unit is planned again next time.
+            raise DailyCapExceeded(str(exc)[:300]) from exc
         import traceback
 
         from membench.protocol.clock import QuestionRun
@@ -250,10 +253,21 @@ def _run_units(
             flush=True,
         )
 
+    def stop(exc: DailyCapExceeded) -> None:
+        print(
+            f"[run] daily cap reached after {done}/{total} units; stopping. "
+            f"Rerun after 00:00 UTC, finished units are kept. {exc}",
+            file=sys.stderr, flush=True,
+        )
+
     if workers <= 1:
         for system_cfg, question, seed in work:
             t0 = time.perf_counter()
-            record = run_unit(system_cfg, question, seed, llm, models, judge, provenance)
+            try:
+                record = run_unit(system_cfg, question, seed, llm, models, judge, provenance)
+            except DailyCapExceeded as exc:
+                stop(exc)
+                return
             finish(system_cfg, question, seed, record, time.perf_counter() - t0)
         return
 
@@ -269,11 +283,20 @@ def _run_units(
             futures[fut] = (system_cfg, question, seed, t0)
         for fut in as_completed(futures):
             system_cfg, question, seed, t0 = futures[fut]
-            record = fut.result()
+            try:
+                record = fut.result()
+            except DailyCapExceeded as exc:
+                pool.shutdown(wait=False, cancel_futures=True)
+                stop(exc)
+                return
             finish(system_cfg, question, seed, record, time.perf_counter() - t0)
     for system_cfg, question, seed in serial:
         t0 = time.perf_counter()
-        record = run_unit(system_cfg, question, seed, llm, models, judge, provenance)
+        try:
+            record = run_unit(system_cfg, question, seed, llm, models, judge, provenance)
+        except DailyCapExceeded as exc:
+            stop(exc)
+            return
         finish(system_cfg, question, seed, record, time.perf_counter() - t0)
 
 
