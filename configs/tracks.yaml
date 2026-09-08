@@ -8,11 +8,20 @@
 #   nemotron-3-super-120b-a12b      6/7  0.5s  tools yes  (one 429 in the burst)
 #   nemotron-3.5-lightning          7/7  71s   tools yes  (too slow)
 #   gemma-4-31b / 26b               0/7  upstream pool saturated (429)
+#
+# Which products a track can carry depends on the model's API features on
+# OpenRouter (checked 2026-09-07 with direct calls, see METHODS):
+#   ling-3.0-flash-fin      tools yes, response_format none  -> no Cognee, no Graphiti
+#   nemotron-3-super-120b   tools, json_object, json_schema, seed -> all systems
+#   cohere/north-mini-code  tools yes, json_object works, json_schema unverified
 judge_model: inclusionai/ling-3.0-flash-fin:free
 tracks:
   - name: ling-3.0-flash-fin
     answer_model: inclusionai/ling-3.0-flash-fin:free
+    systems: oracle,window,file,mem0,langmem
   - name: nemotron-3-super-120b
     answer_model: nvidia/nemotron-3-super-120b-a12b:free
+    systems: oracle,window,file,mem0,langmem,cognee,graphiti
   - name: cohere-north-mini-code
     answer_model: cohere/north-mini-code:free
+    systems: oracle,window,file,mem0,langmem

@@ -186,3 +186,28 @@ Written after each full run. Findings while building are kept here too.
 - 2026-09-07, tool-call markup. Withheld tools on the file baseline's final
   turn made one model write tool-call markup as its answer. The final turn now
   says the tools are gone and asks for the answer in prose.
+- 2026-09-07, structured outputs decide which products a track can carry.
+  Cognee and Graphiti ask the model for JSON through the `response_format`
+  field (Cognee's native litellm path uses a JSON schema, Graphiti's generic
+  client a JSON schema with a JSON-object fallback). OpenRouter's provider for
+  Ling 3.0 Flash rejects any `response_format` with "does not support feature:
+  structured-outputs", so under the Ling track those two products cannot run
+  as shipped. The Ling track therefore carries the two baselines, the oracle,
+  Mem0 and LangMem; the Nemotron 3 Super track, whose model accepts tools,
+  JSON objects, JSON schemas and seeds, carries all seven systems. A model
+  that cannot be used inside a product is a finding about the pair, not a
+  score for the product, and the report names the answerer on every table.
+- 2026-09-07, hidden reasoning inside products. Nemotron 3 Super reasons by
+  default on OpenRouter: one small extraction call took 7.5 s and 167 hidden
+  tokens, 0.7 s with the reasoning-off flag. The harness and the LangChain
+  and litellm paths already send the flag; Graphiti's client has no hook for
+  extra fields, so its completions method is wrapped. Any adapter added later
+  must send it too, or its latency and token columns are not comparable.
+- 2026-09-07, Graphiti ingest unit. The reference adapters add one Graphiti
+  episode per message, about 127 episodes and on the order of 900 internal
+  calls per question here. On a 20 requests per minute budget that is 45
+  minutes per question. Every other adapter ingests one session at a time,
+  so Graphiti now does the same: one episode per session, the session's turns
+  as "role: text" lines, the session date as the reference time. This is a
+  departure from Zep's own evaluation setup and is stated on every Graphiti
+  row.
