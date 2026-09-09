@@ -15,7 +15,7 @@ only after the last session, so it can use only what it stored. We use ten
 LongMemEval questions, two per ability, one seed, free models on OpenRouter,
 and one judge applying three published grading rules. With Ling 3.0 Flash
 answering, the oracle scores 90, the two baselines 80, Mem0 and LangMem 70;
-the products spend 20 to 50 times fewer prompt tokens per answer. Switching
+the products spend 10 to 50 times fewer prompt tokens per answer. Switching
 the answering model to Nemotron 3 Super moves the oracle to 60 with no change
 to any memory system. Cognee and Graphiti cannot run under Ling, whose
 endpoint refuses schema-constrained output, and are partial under Nemotron.
