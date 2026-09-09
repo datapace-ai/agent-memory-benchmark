@@ -536,6 +536,10 @@ sizes are not.
 
 ## 9. Reproducibility and data availability
 
+The article this work supports, with the decision tree the findings feed, is
+[Mem0 vs Zep vs Letta vs LangMem vs Cognee: which to pick](https://datapace.ai/blog/ai-agent-memory-tools-2026)
+on datapace.ai.
+
 Everything needed to reproduce the pilot is in this repository:
 
 - `data/questions_s12.jsonl`: the selected questions and reduced histories.

@@ -1,5 +1,7 @@
 # Agent Memory Benchmark
 
+Built and maintained by [Datapace](https://datapace.ai) for the article [Mem0 vs Zep vs Letta vs LangMem vs Cognee: which to pick](https://datapace.ai/blog/ai-agent-memory-tools-2026), which uses these numbers and explains how to choose a memory tool from your own measurements.
+
 A vendor-neutral benchmark for AI agent memory systems, run by Datapace.
 
 Every system does the same job: ingest a user's conversation history one session
