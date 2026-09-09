@@ -392,6 +392,35 @@ provider pool that was saturated: every probe call and the first two attempted
 units came back as rate-limited, so it was set aside; it also does not offer
 schema-constrained output, so like Ling it could not carry Cognee or Graphiti.
 
+### 4.9 Free answerer bake-off, 8 September 2026
+
+After the pilot, every remaining free candidate on OpenRouter answered the
+same ten oracle questions (evidence sessions only, seed 11) under the Ling
+judge, and was probed once each for a plain reply, a JSON object, a JSON
+schema and a tool call. About 330 calls in total; run records are in
+`results/bakeoff/`.
+
+| Model | Plain | JSON object | JSON schema | Tool call | Oracle correct | Errors | Answer p50 |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: |
+| Ling 3.0 Flash Fin (pilot, track A) | ok | refused | refused | ok | 9 of 10 | 0 | 6.5 s |
+| Ling 3.0 Flash Sante | ok | refused | refused | ok | 7 of 10 | 0 | 7.5 s |
+| Dots 3 Note Preview | ok | ok | ok | ok | 4 of 9 | 1 | 7.6 s |
+| Poolside Laguna S 2.1 | ok | ok | rate-limited | ok | 3 of 10 | 0 | 7.6 s |
+| Cohere North Mini Code | ok | ok | ok | empty reply | 2 of 10 | 0 | 6.9 s |
+| Gemma 4 31B and 26B | rate-limited on every call | | | | none finished | 10 each | |
+
+No free model comes near Ling as an answerer. The only free model that
+offers schema-constrained output, and so the only one able to carry Cognee
+and Graphiti, scores half of Ling's ceiling. Gemma 4's shared pool was still
+saturated a day later; every one of its calls was refused. The Ling rows are
+graded by Ling itself, as on track A.
+
+Consequence for the free route: the two graph products can run only under
+Dots 3 Note Preview, a weak answerer, or under a paid model. A track under
+Dots 3 is still a valid within-track comparison, since every system in it
+shares the same answerer and the same oracle, but its ceiling would sit
+around 45 and the absolute numbers would not be comparable with track A.
+
 ## 5. Discussion
 
 On this sample the products do not recall better than the context window;

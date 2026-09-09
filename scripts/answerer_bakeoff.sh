@@ -40,11 +40,14 @@ def call(extra, label):
         return f"{label}: {'ok' if ok else 'weak'} {time.time()-t0:.1f}s {c[:50]!r}"
     except urllib.error.HTTPError as e: return f"{label}: http {e.code} {e.read()[:80].decode(errors='replace')}"
     except Exception as e: return f"{label}: exc {str(e)[:80]}"
-print("  ", call({}, "plain")); time.sleep(3.5)
+plain = call({}, "plain"); print("  ", plain); time.sleep(3.5)
+if not plain.startswith("plain: ok"):
+    print("   skipped: the plain call failed, no point spending the budget"); sys.exit(3)
 print("  ", call({"response_format": {"type": "json_object"}}, "json_object")); time.sleep(3.5)
 print("  ", call({"response_format": {"type": "json_schema", "json_schema": {"name": "c", "schema": schema}}}, "json_schema")); time.sleep(3.5)
 print("  ", call({"tools": [{"type": "function", "function": {"name": "answer", "parameters": schema}}], "tool_choice": "auto"}, "tool_calls")); time.sleep(3.5)
 PY
+  [ $? -eq 3 ] && continue
   uv run python -m membench.run --limit 10 --seeds 11 --systems oracle --workers 2 --retry-errors \
     --answer-model "$model" --judge-model "$JUDGE" --out "results/bakeoff/$slug.jsonl" 2>&1 | grep -E '^\[|daily cap|failed after' | tail -n 3
   uv run python - "results/bakeoff/$slug.jsonl" <<'PY'
