@@ -132,8 +132,11 @@ prompt and a tool call). The pilot ran two tracks:
 | A | `inclusionai/ling-3.0-flash-fin:free` | fastest and most reliable free model in the probe, 0.7 s median | oracle, window, file, Mem0, LangMem |
 | B | `nvidia/nemotron-3-super-120b-a12b:free` | the only responsive free model supporting tools, JSON object, JSON schema and seed | all seven |
 
-Track A cannot carry Cognee or Graphiti because both request JSON through the
-`response_format` field and Ling's provider rejects any such request.
+Track A cannot carry Cognee or Graphiti as configured, because both request JSON
+through the `response_format` field and Ling's provider rejects any such request.
+Cognee also documents an instructor tool-call mode, which Ling would accept and
+which the next run uses; Graphiti's generic client offers only the two
+`response_format` modes.
 
 ### 3.5 Which model did what
 
@@ -335,8 +338,10 @@ Each of the following was found while running the pilot and is now handled in
 the harness; each is a finding about running memory products on shared,
 rate-limited endpoints rather than about their recall.
 
-- Cognee and Graphiti require schema-constrained JSON output. Providers that
-  do not offer it cannot run them at all.
+- Cognee and Graphiti, in their default configurations, request
+  schema-constrained JSON output; providers that do not offer it cannot run
+  them as shipped. Cognee's instructor tool-call mode avoids the requirement
+  and was not used in the pilot.
 - Nemotron reasons by default unless the request says otherwise: one small
   extraction call cost 7.5 seconds and 167 hidden tokens against 0.7 seconds
   with the flag. Graphiti's client has no hook for the flag, so it is wrapped.
@@ -411,7 +416,7 @@ schema and a tool call. About 330 calls in total; run records are in
 
 No free model comes near Ling as an answerer. The only free model that
 offers schema-constrained output, and so the only one able to carry Cognee
-and Graphiti, scores half of Ling's ceiling. Gemma 4's shared pool was still
+and Graphiti as configured, scores half of Ling's ceiling. Gemma 4's shared pool was still
 saturated a day later; every one of its calls was refused. The Ling rows are
 graded by Ling itself, as on track A.
 
