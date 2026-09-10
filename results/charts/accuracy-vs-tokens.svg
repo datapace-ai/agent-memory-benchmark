@@ -32,15 +32,15 @@
 <line x1="615.1" y1="122.8" x2="615.1" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
 <circle cx="615.1" cy="59.6" r="7" fill="#ffffff" stroke="#171d24" stroke-width="2"/>
 <text x="627.1" y="47.6" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Oracle ceiling · 90</text>
-<text x="627.1" y="61.6" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">6,584 tok</text>
+<text x="627.1" y="61.6" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">6,585 tok</text>
 <line x1="802.7" y1="186.0" x2="802.7" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
 <circle cx="802.7" cy="91.2" r="7" fill="#171d24"/>
 <text x="814.7" y="79.2" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Window 32k · 80</text>
-<text x="814.7" y="93.2" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">26,827 tok</text>
+<text x="814.7" y="93.2" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">26,828 tok</text>
 <line x1="730.3" y1="186.0" x2="730.3" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
 <circle cx="730.3" cy="91.2" r="7" fill="#171d24"/>
 <text x="718.3" y="79.2" text-anchor="end" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">File search · 80</text>
-<text x="718.3" y="93.2" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">15,603 tok</text>
+<text x="718.3" y="93.2" text-anchor="end" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">15,604 tok</text>
 <line x1="281.0" y1="217.6" x2="281.0" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
 <circle cx="281.0" cy="122.8" r="7" fill="#0f8a5f"/>
 <text x="293.0" y="110.8" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">Mem0 · 70</text>
@@ -48,6 +48,6 @@
 <line x1="428.8" y1="217.6" x2="428.8" y2="28.0" stroke="#d6dbe1" stroke-width="2" stroke-opacity="1.0"/>
 <circle cx="428.8" cy="122.8" r="7" fill="#0f8a5f"/>
 <text x="440.8" y="144.8" text-anchor="start" fill="#171d24" font-size="12" font-weight="600" font-family="Helvetica, Arial, sans-serif">LangMem · 70</text>
-<text x="440.8" y="158.8" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">1,631 tok</text>
+<text x="440.8" y="158.8" text-anchor="start" fill="#667080" font-size="12" font-weight="400" font-family="Menlo, Consolas, monospace">1,632 tok</text>
 <text x="56.0" y="16.0" text-anchor="start" fill="#667080" font-size="11" font-weight="400" font-family="Helvetica, Arial, sans-serif">Whiskers: 95% bootstrap interval. Green: memory products. Black: baselines. Hollow: oracle.</text>
 </svg>

@@ -76,8 +76,8 @@ class Svg:
         path.write_text("\n".join(self.parts) + "\n")
 
 
-def load_summary(track: str) -> dict:
-    return json.loads((REPO_ROOT / "results" / "tracks" / track / "summary.json").read_text())["systems"]
+def load_summary(track: str, tracks_dir: Path) -> dict:
+    return json.loads((tracks_dir / track / "summary.json").read_text())["systems"]
 
 
 def timing_medians(track: str) -> dict[str, dict]:
@@ -133,7 +133,7 @@ def chart_accuracy_vs_tokens(ling: dict, out: Path) -> None:
         svg.circle(cx, cy, 7, fill, INK if key == "oracle" else None)
         dx, dy, anchor = placement[key]
         svg.text(cx + dx, cy + dy, f"{NAMES[key]} · {acc}", anchor, INK, weight=600)
-        svg.text(cx + dx, cy + dy + 14, f"{int(s['tokens_per_answer']):,} tok", anchor, MUTED, mono=True)
+        svg.text(cx + dx, cy + dy + 14, f"{round(s['tokens_per_answer']):,} tok", anchor, MUTED, mono=True)
     svg.text(L, 16, "Whiskers: 95% bootstrap interval. Green: memory products. Black: baselines. Hollow: oracle.", "start", MUTED, 11)
     svg.write(out / "accuracy-vs-tokens.svg")
 
@@ -221,11 +221,14 @@ def chart_time(timing: dict, out: Path) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Draw the results charts as SVG.")
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "results" / "charts")
+    # The write-up's figures are the pilot's, frozen under results/pilot-2026-09-07;
+    # results/tracks moves with every nightly run.
+    parser.add_argument("--tracks-dir", type=Path, default=REPO_ROOT / "results" / "pilot-2026-09-07" / "tracks")
     parser.add_argument("--ling", default="ling-3.0-flash-fin")
     parser.add_argument("--nemotron", default="nemotron-3-super-120b")
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
-    ling, nemo = load_summary(args.ling), load_summary(args.nemotron)
+    ling, nemo = load_summary(args.ling, args.tracks_dir), load_summary(args.nemotron, args.tracks_dir)
     chart_accuracy_vs_tokens(ling, args.out)
     chart_tracks(ling, nemo, args.out)
     chart_abilities(ling, args.out)
