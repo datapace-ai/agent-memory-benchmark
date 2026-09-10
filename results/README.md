@@ -22,7 +22,7 @@ endpoint refuses schema-constrained output, and are partial under Nemotron.
 Of the two free models, Ling 3.0 Flash was the stronger answerer and the more
 reliable endpoint on every system, but cannot run the graph products. Every
 system scores 50 on abstention. Ingest, not answer latency, is where the
-graph products spend their time: six to eight minutes per question. We report
+graph products spend their time: seven to eight minutes per question. We report
 these as directions, not verdicts: every 95% interval overlaps every other.
 The durable findings are methodological: name the answering model and print
 the oracle, report several judge rules with a hand-checked sample, account for
@@ -106,7 +106,7 @@ competitor.
 | LangMem | product | langmem 0.0.30, `MemoryStoreManager.invoke` per session, `search` top 10, in-memory store |
 | Cognee | product | cognee 1.5.4, `add` then `cognify` per session, `search(GRAPH_COMPLETION, only_context)` top 10, sqlite, kuzu, lancedb, one unit at a time |
 | Graphiti | product | graphiti-core 0.30.1, one episode per session with the session date as reference time, embedded FalkorDB, hybrid edge search top 10, BGE reranker, one unit at a time |
-| Letta | product | letta-client 1.12.1 against a Docker server; configured, not run in this pilot |
+| Letta | product | letta-client 1.12.1 against the letta/letta Docker server; configured, not run. Letta has since deprecated that image and moved all agents to MemFS under its App Server and Agent SDK, so a future run goes through those, not this adapter |
 
 The model inside each product is the track's answering model. Embeddings for
 every product are `BAAI/bge-small-en-v1.5` (384 dimensions) on the CPU,
@@ -529,8 +529,10 @@ sizes are not.
 8. **A grounding set.** Add Datapace's own operational questions, where the
    evidence is structured metadata rather than chat, and compare the same
    systems.
-9. **Letta and hosted services.** Run Letta's server and, under a right of
-   reply, the hosted versions of the products with the vendors' own defaults.
+9. **Letta and hosted services.** Run Letta through its App Server and Agent
+   SDK, so the benchmark measures MemFS rather than the legacy blocks design,
+   and, under a right of reply, the hosted versions of the products with the
+   vendors' own defaults.
 10. **Latency under load.** Measure on a dedicated endpoint so latency
     reflects the system rather than a shared free tier.
 
